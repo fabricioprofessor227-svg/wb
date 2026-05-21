@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>H145 Weight & Balance - Helicóptero</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f2e9 0%, #c8e6d9 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 32, 0, 0.25);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #1b4d2e;
+            padding: 1.5rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 img {
+            height: 48px;
+            width: auto;
+        }
+
+        .fullscreen-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .steps-nav {
+            display: flex;
+            background: #f8fbf7;
+            border-bottom: 1px solid #d0e2d4;
+            padding: 0 2rem;
+        }
+        .step-tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem 0.5rem;
+            font-weight: 600;
+            color: #2c5a3b;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        .step-tab.active {
+            color: #0f4c2d;
+            border-bottom-color: #2e7d5e;
+            background: #ffffff;
+            font-weight: 700;
+        }
+        .step-tab.completed { color: #1f6e43; }
+        .step-tab:hover:not(.active) { background: #eef5ea; border-bottom-color: #a8cfb5; }
+
+        .step-content {
+            display: none;
+            padding: 2rem;
+            animation: fade 0.25s ease;
+        }
+        .step-content.active-step { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(5px);} to { opacity: 1; transform: translateY(0);} }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .input-card {
+            background: #fafef8;
+            border-radius: 24px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #cce3d4;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .input-card.imperial-theme {
+            background: #e6f0fa;
+            border-color: #9bb8da;
+        }
+        .input-card.imperial-theme h3 {
+            border-left-color: #3a6d96;
+        }
+        .input-card.metric-theme {
+            background: #eaf3e8;
+            border-color: #6f9e7c;
+        }
+        .input-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #1a4a2e;
+            border-left: 5px solid #3ba777;
+            padding-left: 12px;
+        }
+        .input-field {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        label {
+            font-weight: 600;
+            color: #1e3a2f;
+            font-size: 0.85rem;
+        }
+        input, select {
+            padding: 12px 14px;
+            border-radius: 18px;
+            border: 1px solid #cbdcd2;
+            background: white;
+            font-size: 0.9rem;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2e9c6c;
+            box-shadow: 0 0 0 3px rgba(46, 156, 108, 0.2);
+        }
+        .unit-buttons {
+            display: flex;
+            gap: 12px;
+            margin: 0 0 12px 0;
+        }
+        .unit-btn {
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            border: 2px solid;
+            cursor: pointer;
+            transition: 0.2s;
+            background: white;
+        }
+        .unit-btn.imperial {
+            border-color: #7b9fc7;
+            background: #eef3f9;
+            color: #1b3a5c;
+        }
+        .unit-btn.imperial.active {
+            background: #3a6d96;
+            color: white;
+            border-color: #2a5070;
+        }
+        .unit-btn.metric {
+            border-color: #4a7c5c;
+            background: #e1ede4;
+            color: #1e3a2f;
+        }
+        .unit-btn.metric.active {
+            background: #2d6a4f;
+            color: white;
+            border-color: #1b4d2e;
+        }
+        .unit-warning {
+            background: #fff8e7;
+            border-left: 4px solid #e6b422;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #7a6300;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.8rem;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 26px;
+            border-radius: 40px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .btn-primary { background: #1e6e46; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .btn-primary:hover { background: #0f5938; transform: translateY(-1px); }
+        .btn-secondary { background: #e2ece4; color: #1c583b; border: 1px solid #bdd9ca; }
+        .btn-secondary:hover { background: #d0e2d6; }
+        .btn-outline { background: transparent; border: 1px solid #2d8f60; color: #2d8f60; }
+        .btn-outline:hover { background: #e9f4ef; }
+        .btn-imprimir {
+            background: #3a6d96;
+            color: white;
+        }
+        .btn-imprimir:hover {
+            background: #2a5070;
+        }
+        .btn-imprimir-metric {
+            background: #2d6a4f;
+            color: white;
+        }
+        .btn-imprimir-metric:hover {
+            background: #1b4d2e;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 1rem 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e2f0e8;
+        }
+        th {
+            background: #e1f0e6;
+            color: #1c553a;
+            font-weight: 700;
+        }
+        table tbody tr:nth-child(even) {
+            background-color: #f5f9f6;
+        }
+        .result-card {
+            background: #f9fffbf0;
+            border-radius: 28px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #cce3d4;
+        }
+        .result-card.imperial-theme {
+            background: #e6f0fa;
+            border-color: #9bb8da;
+        }
+        .result-card.metric-theme {
+            background: #f9fffbf0;
+            border-color: #cce3d4;
+        }
+        .cg-highlight {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            background: #eef6f0;
+            padding: 1rem 1.8rem;
+            border-radius: 28px;
+        }
+        .table-unit-toggle {
+            text-align: left;
+            margin-bottom: 12px;
+        }
+        .unit-toggle-btn {
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid;
+            margin-left: 8px;
+            transition: 0.2s;
+        }
+        .unit-toggle-btn.imperial {
+            background: #eef3f9;
+            border-color: #7b9fc7;
+            color: #1b3a5c;
+        }
+        .unit-toggle-btn.imperial.active {
+            background: #3a6d96;
+            color: white;
+            border-color: #2a5070;
+        }
+        .unit-toggle-btn.metric {
+            background: #e1ede4;
+            border-color: #4a7c5c;
+            color: #1e3a2f;
+        }
+        .unit-toggle-btn.metric.active {
+            background: #2d6a4f;
+            color: white;
+        }
+        .small-note { font-size: 0.7rem; color: #6c8b7a; margin-top: 4px; }
+        footer {
+            background: #f1f9f2;
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 1rem;
+            color: #5b7c6a;
+            border-top: 1px solid #d4e4da;
+        }
+        @media (max-width: 760px) {
+            .step-content { padding: 1.2rem; }
+            th,td { font-size: 0.75rem; }
+        }
+        .tara-image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+        .tara-image-container .text {
+            flex: 2;
+        }
+        .tara-image-container .image {
+            flex: 1;
+            text-align: center;
+        }
+        .tara-image-container .image img {
+            max-width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .certification-table td {
+            text-align: left;
+            padding: 10px;
+        }
+        .certification-table td:first-child {
+            font-weight: 600;
+            width: 180px;
+        }
+
+        @media print {
+            body { background: white; }
+            .header, .steps-nav, .button-group, .fullscreen-btn, footer, .table-unit-toggle, .unit-buttons {
+                display: none !important;
+            }
+            .app-container { box-shadow: none; margin: 0; border-radius: 0; }
+            /* Oculta as etapas anteriores, mostra apenas os resultados */
+            #step0, #step1, #step2 {
+                display: none !important;
+            }
+            #step3 {
+                display: block !important;
+                padding: 0;
+            }
+            .result-card { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <h1>
+            <img src="https://i.imgur.com/yIvlOTj.png" alt="Helicóptero H145">
+            H145 Weight & Balance
+        </h1>
+        <button class="fullscreen-btn" id="fullscreenBtn">⛶ Tela cheia</button>
+    </div>
+
+    <div class="steps-nav" id="stepsNav">
+        <button class="step-tab" data-step="0">1️⃣ Dados de Registro</button>
+        <button class="step-tab" data-step="1">2️⃣ Tara</button>
+        <button class="step-tab" data-step="2">3️⃣ Dados de Pesagem</button>
+        <button class="step-tab" data-step="3">4️⃣ Resultados & CG</button>
+    </div>
+
+    <!-- STEP 0 - REGISTRO -->
+    <div class="step-content" id="step0">
+        <div class="form-grid">
+            <div class="input-card">
+                <h3>📄 Identificação da Aeronave</h3>
+                <div class="input-field"><label>MARCAS (Matrícula)</label><input type="text" id="marcas" placeholder="PR-AIG"></div>
+                <div class="input-field"><label>MODELO</label><input type="text" id="modelo" placeholder="BK 117 D-2" value="BK 117 D-2"></div>
+                <div class="input-field"><label>NÚMERO DE SÉRIE</label><input type="text" id="serial" placeholder="20179"></div>
+                <div class="input-field"><label>ANO DE FABRICAÇÃO</label><input type="text" id="anoFab" placeholder="2019"></div>
+            </div>
+            <div class="input-card">
+                <h3>📅 Datas & Responsáveis</h3>
+                <div class="input-field"><label>DATA DA EXECUÇÃO</label><input type="date" id="dataExec"></div>
+                <div class="input-field"><label>VENCIMENTO CALIBRAÇÃO</label><input type="date" id="vencCal"></div>
+                <div class="input-field"><label>MECÂNICO RESPONSÁVEL</label><input type="text" id="mecanico" placeholder="FABRÍCIO / UCHÔA"></div>
+                <div class="input-field"><label>INSPETOR RESPONSÁVEL</label><input type="text" id="inspetor" placeholder="LUIZ MELLO"></div>
+            </div>
+        </div>
+        <div class="button-group"><div></div><button class="btn btn-primary" id="nextStep0">Próximo →</button></div>
+    </div>
+
+    <!-- STEP 1 - TARA -->
+    <div class="step-content" id="step1">
+        <div class="tara-image-container">
+            <div class="text">
+                <div class="input-card" id="taraUnitCard" style="margin-bottom: 0;">
+                    <h3>⚙️ Unidade para informar a TARA</h3>
+                    <div class="unit-buttons">
+                        <button class="unit-btn imperial" id="taraLbBtn">libras</button>
+                        <button class="unit-btn metric" id="taraKgBtn">kg</button>
+                    </div>
+                    <div class="unit-warning" id="taraWarning">⚠️ Atenção: Os valores de tara serão interpretados na unidade selecionada acima.</div>
+                </div>
+            </div>
+            <div class="image">
+                <img src="https://i.imgur.com/cI9C4to.png" alt="Pesagem H145">
+            </div>
+        </div>
+
+        <div class="form-grid" id="taraCardsGrid">
+            <div class="input-card" id="taraCard0"><h3>X1 FWD</h3><div class="input-field"><label>Tara (valor)</label><input type="number" step="0.001" id="taraX1" placeholder="0.580"></div></div>
+            <div class="input-card" id="taraCard1"><h3>X2 AFT LH</h3><div class="input-field"><label>Tara (valor)</label><input type="number" step="0.001" id="taraX2" placeholder="0.930"></div></div>
+            <div class="input-card" id="taraCard2"><h3>X3 AFT RH</h3><div class="input-field"><label>Tara (valor)</label><input type="number" step="0.001" id="taraX3" placeholder="0.930"></div></div>
+        </div>
+        <div class="button-group"><button class="btn btn-secondary" id="prevStep1">← Voltar</button><button class="btn btn-primary" id="nextStep1">Próximo →</button></div>
+    </div>
+
+    <!-- STEP 2 - PESAGEM -->
+    <div class="step-content" id="step2">
+        <div class="input-card" id="pesagemUnitCard" style="margin-bottom: 1.5rem;">
+            <h3>📏 Unidade dos dados de pesagem</h3>
+            <div class="unit-buttons">
+                <button class="unit-btn imperial" id="pesagemLbBtn">libras</button>
+                <button class="unit-btn metric" id="pesagemKgBtn">kg</button>
+            </div>
+            <div class="unit-warning" id="pesagemWarning">⚠️ As leituras de pesagem devem ser inseridas na unidade selecionada acima.</div>
+        </div>
+        <div class="form-grid" id="pesagemCardsGrid">
+            <div class="input-card" id="pesagemCard0"><h3>X1 FWD</h3>
+                <div class="input-field"><label>1ª Pesagem</label><input type="number" step="0.001" id="x1_p1" placeholder="ex: 824.000"></div>
+                <div class="input-field"><label>2ª Pesagem</label><input type="number" step="0.001" id="x1_p2" placeholder="ex: 840.000"></div>
+                <div class="input-field"><label>3ª Pesagem</label><input type="number" step="0.001" id="x1_p3" placeholder="ex: 830.000"></div>
+            </div>
+            <div class="input-card" id="pesagemCard1"><h3>X2 AFT LH</h3>
+                <div class="input-field"><label>1ª Pesagem</label><input type="number" step="0.001" id="x2_p1" placeholder="ex: 2122.000"></div>
+                <div class="input-field"><label>2ª Pesagem</label><input type="number" step="0.001" id="x2_p2" placeholder="ex: 2148.000"></div>
+                <div class="input-field"><label>3ª Pesagem</label><input type="number" step="0.001" id="x2_p3" placeholder="ex: 2144.000"></div>
+            </div>
+            <div class="input-card" id="pesagemCard2"><h3>X3 AFT RH</h3>
+                <div class="input-field"><label>1ª Pesagem</label><input type="number" step="0.001" id="x3_p1" placeholder="ex: 2430.000"></div>
+                <div class="input-field"><label>2ª Pesagem</label><input type="number" step="0.001" id="x3_p2" placeholder="ex: 2404.000"></div>
+                <div class="input-field"><label>3ª Pesagem</label><input type="number" step="0.001" id="x3_p3" placeholder="ex: 2406.000"></div>
+            </div>
+        </div>
+        <div class="button-group"><button class="btn btn-secondary" id="prevStep2">← Voltar</button><button class="btn btn-primary" id="nextStep2">Gerar Resultados →</button></div>
+    </div>
+
+    <!-- STEP 3 - RESULTADOS E CG (página 4) -->
+        <!-- STEP 3 - RESULTADOS E CG (página 4) -->
+    <div class="step-content" id="step3">
+        <div id="resultadosDinamicos"></div>
+        <div class="button-group">
+            <button class="btn btn-imprimir" id="printReportLb">🖨️ Imprimir Weighing Report (lb)</button>
+            <button class="btn btn-imprimir-metric" id="printReportKg">🖨️ Imprimir Weighing Report (kg)</button>
+            <button class="btn btn-imprimir" id="printPlanilhasLb">📊 Imprimir Planilhas (lb)</button>
+            <button class="btn btn-imprimir-metric" id="printPlanilhasKg">📊 Imprimir Planilhas (kg)</button>
+        </div>
+        <div class="button-group"><button class="btn btn-secondary" id="prevStep3">← Editar Pesagem</button><button class="btn btn-primary" id="resetAllBtn">🔁 Nova Pesagem</button><button class="btn btn-outline" id="encerrarBtn">🚪 Encerrar</button></div>
+    </div>
+
+<script>
+    // Constantes
+    const DIST_LONG = [3125, 5025, 5025];
+    const DIST_LAT = [0, -600, 600];
+    const LB_TO_KG = 0.45359237;
+    const MM_TO_INCH = 0.0393701;
+    const KG_TO_LB = 1 / LB_TO_KG;
+
+    // Estado
+    let state = {
+        registro: { marcas: "", modelo: "", serial: "", anoFab: "", dataExec: "", vencCal: "", mecanico: "", inspetor: "" },
+        taraKg: [0, 0, 0],
+        pesagemRawKg: [[0,0,0],[0,0,0],[0,0,0]],
+        unidadePesagemInput: "lb",
+        taraUnitInput: "kg"
+    };
+
+    function convertToKg(value, fromUnit) { return fromUnit === "lb" ? value * LB_TO_KG : value; }
+    function convertFromKg(value, toUnit) { return toUnit === "lb" ? value / LB_TO_KG : value; }
+
+    function captureRegistro() {
+        state.registro = {
+            marcas: document.getElementById("marcas").value.trim() || "N/A",
+            modelo: document.getElementById("modelo").value.trim() || "BK 117 D-2",
+            serial: document.getElementById("serial").value.trim() || "N/A",
+            anoFab: document.getElementById("anoFab").value.trim() || "2019",
+            dataExec: document.getElementById("dataExec").value || "",
+            vencCal: document.getElementById("vencCal").value || "",
+            mecanico: document.getElementById("mecanico").value.trim() || "NÃO INFORMADO",
+            inspetor: document.getElementById("inspetor").value.trim() || "NÃO INFORMADO"
+        };
+    }
+
+    function captureTara() {
+        let taraInputs = [document.getElementById("taraX1").value, document.getElementById("taraX2").value, document.getElementById("taraX3").value];
+        let taraKg = [0,0,0];
+        for(let i=0;i<3;i++) {
+            let val = parseFloat(taraInputs[i]);
+            if(isNaN(val)) val = 0;
+            taraKg[i] = convertToKg(val, state.taraUnitInput);
+        }
+        state.taraKg = taraKg;
+    }
+
+    function capturePesagens() {
+        const pointsIds = [["x1_p1","x1_p2","x1_p3"], ["x2_p1","x2_p2","x2_p3"], ["x3_p1","x3_p2","x3_p3"]];
+        let readingsKg = [[0,0,0],[0,0,0],[0,0,0]];
+        for(let p=0; p<3; p++){
+            for(let m=0; m<3; m++){
+                let val = parseFloat(document.getElementById(pointsIds[p][m]).value);
+                if(isNaN(val)) val = 0;
+                readingsKg[p][m] = convertToKg(val, state.unidadePesagemInput);
+            }
+        }
+        state.pesagemRawKg = readingsKg;
+    }
+
+    function calcularResultados() {
+        const tara = state.taraKg;
+        const leiturasKg = state.pesagemRawKg;
+        let grossKg = [0,0,0];
+        let netKg = [0,0,0];
+        for(let i=0;i<3;i++){
+            let sum = leiturasKg[i][0] + leiturasKg[i][1] + leiturasKg[i][2];
+            let media = sum / 3;
+            grossKg[i] = media;
+            netKg[i] = Math.max(0, media - tara[i]);
+        }
+        const pesoVazioKg = netKg.reduce((a,b)=>a+b,0);
+        let momentoLongKgmm = 0, momentoLatKgmm = 0;
+        for(let i=0;i<3;i++){
+            momentoLongKgmm += netKg[i] * DIST_LONG[i];
+            momentoLatKgmm += netKg[i] * DIST_LAT[i];
+        }
+        let cgLong = pesoVazioKg > 0 ? momentoLongKgmm / pesoVazioKg : 0;
+        let cgLat = pesoVazioKg > 0 ? momentoLatKgmm / pesoVazioKg : 0;
+        
+        let pesoBrutoPorPesagem = [0,0,0];
+        for(let m=0; m<3; m++){
+            let soma = 0;
+            for(let p=0; p<3; p++) soma += leiturasKg[p][m];
+            pesoBrutoPorPesagem[m] = soma;
+        }
+        let maiorBruto = Math.max(...pesoBrutoPorPesagem);
+        let menorBruto = Math.min(...pesoBrutoPorPesagem);
+        let diffPercent = maiorBruto > 0 ? ((maiorBruto - menorBruto)/maiorBruto)*100 : 0;
+        
+        let pesoVazioLb = pesoVazioKg * KG_TO_LB;
+        let momentoLongLbin = momentoLongKgmm * KG_TO_LB * MM_TO_INCH;
+        let momentoLatLbin = momentoLatKgmm * KG_TO_LB * MM_TO_INCH;
+        
+        return { netKg, grossKg, pesoVazioKg, momentoLongKgmm, momentoLatKgmm, cgLong, cgLat, 
+                 pesoBrutoPorPesagem, maiorBruto, menorBruto, diffPercent, tara, leiturasKg,
+                 pesoVazioLb, momentoLongLbin, momentoLatLbin };
+    }
+
+    function applyTaraTheme() {
+        const isLb = (state.taraUnitInput === "lb");
+        const themeClass = isLb ? "imperial-theme" : "metric-theme";
+        const cardIds = ["taraCard0", "taraCard1", "taraCard2"];
+        cardIds.forEach(id => {
+            const card = document.getElementById(id);
+            if (card) {
+                card.classList.remove("imperial-theme", "metric-theme");
+                card.classList.add(themeClass);
+            }
+        });
+        document.getElementById("taraLbBtn").classList.toggle("active", isLb);
+        document.getElementById("taraKgBtn").classList.toggle("active", !isLb);
+        const warning = document.getElementById("taraWarning");
+        if (warning) {
+            warning.innerHTML = `⚠️ Atenção: Os valores de tara serão interpretados em <strong>${isLb ? "libras (lb)" : "quilogramas (kg)"}</strong>. O sistema converterá para kg automaticamente.`;
+        }
+    }
+
+    function applyPesagemTheme() {
+        const isLb = (state.unidadePesagemInput === "lb");
+        const themeClass = isLb ? "imperial-theme" : "metric-theme";
+        for(let i=0;i<3;i++) {
+            const card = document.getElementById(`pesagemCard${i}`);
+            if(card) {
+                card.classList.remove("imperial-theme", "metric-theme");
+                card.classList.add(themeClass);
+            }
+        }
+        document.getElementById("pesagemLbBtn").classList.toggle("active", isLb);
+        document.getElementById("pesagemKgBtn").classList.toggle("active", !isLb);
+        const warning = document.getElementById("pesagemWarning");
+        if (warning) {
+            warning.innerHTML = `⚠️ As leituras de pesagem devem ser inseridas em <strong>${isLb ? "libras (lb)" : "quilogramas (kg)"}</strong>.`;
+        }
+    }
+
+    let tableDisplayUnits = {
+        main: "lb",
+        moments: "lbin",
+        quality: "lb"
+    };
+
+    function formatBr(valor, decimais = 2) {
+        return valor.toLocaleString('pt-BR', { minimumFractionDigits: decimais, maximumFractionDigits: decimais });
+    }
+
+    function renderizarResultados() {
+        let anyNonZero = state.pesagemRawKg.some(row=>row.some(v=>v!==0));
+        if(!anyNonZero && state.pesagemRawKg[0][0]===0){
+            document.getElementById("resultadosDinamicos").innerHTML = `<div class="result-card">⚠️ Nenhum dado de pesagem encontrado. Volte e insira as medições.</div>`;
+            return;
+        }
+        const calc = calcularResultados();
+        
+        function formatPeso(valKg, unit) {
+            let val = unit === "lb" ? valKg / LB_TO_KG : valKg;
+            return formatBr(val, 3) + " " + unit;
+        }
+        
+        const pontos = ["X1 FWD", "X2 AFT LH", "X3 AFT RH"];
+        let html = '';
+        
+        const mainUnit = tableDisplayUnits.main;
+        const mainThemeClass = mainUnit === 'lb' ? 'imperial-theme' : 'metric-theme';
+        html += `<div class="result-card ${mainThemeClass}">
+            <div class="table-unit-toggle">
+                <button class="unit-toggle-btn ${mainUnit === 'lb' ? 'imperial active' : 'imperial'}" data-table="main" data-unit="lb">Mostrar em libras (3 casas)</button>
+                <button class="unit-toggle-btn ${mainUnit === 'kg' ? 'metric active' : 'metric'}" data-table="main" data-unit="kg">Mostrar em kg (3 casas)</button>
+            </div>
+            <h3>📊 Dados da Pesagem (3 casas decimais)</h3>
+            <table><thead><tr><th>PONTO</th><th>PES-1</th><th>PES-2</th><th>PES-3</th><th>GROSS WT</th><th>TARA</th><th>NET WT</th></tr></thead><tbody>`;
+        for(let i=0;i<3;i++){
+            html += `<tr>
+                <td><strong>${pontos[i]}</strong></td>
+                <td>${formatPeso(state.pesagemRawKg[i][0], mainUnit)}</td>
+                <td>${formatPeso(state.pesagemRawKg[i][1], mainUnit)}</td>
+                <td>${formatPeso(state.pesagemRawKg[i][2], mainUnit)}</td>
+                <td>${formatPeso(calc.grossKg[i], mainUnit)}</td>
+                <td>${formatPeso(calc.tara[i], mainUnit)}</td>
+                <td>${formatPeso(calc.netKg[i], mainUnit)}</td>
+            </tr>`;
+        }
+        html += `<tr style="background:#e8f3ec;"><td><strong>PESO VAZIO</strong></td><td colspan="4"></td><td></td><td>${formatPeso(calc.pesoVazioKg, mainUnit)}</td></tr>`;
+        html += `</tbody></table></div>`;
+
+        const momentUnit = tableDisplayUnits.moments;
+        const momentThemeClass = momentUnit === 'lbin' ? 'imperial-theme' : 'metric-theme';
+        html += `<div class="result-card ${momentThemeClass}">
+            <div class="table-unit-toggle">
+                <button class="unit-toggle-btn ${momentUnit === 'lbin' ? 'imperial active' : 'imperial'}" data-table="moments" data-unit="lbin">Mostrar em lb·in (pol)</button>
+                <button class="unit-toggle-btn ${momentUnit === 'kgmm' ? 'metric active' : 'metric'}" data-table="moments" data-unit="kgmm">Mostrar em kg·mm</button>
+            </div>
+            <h3>📐 Momento de Força / CG (Peso Vazio)</h3>
+            <table><thead><tr><th>PONTO</th><th>DIST. LONG</th><th>MOMENTO LONGITUDINAL</th><th>DIST. LATERAL</th><th>MOMENTO LATERAL</th></tr></thead><tbody>`;
+        for(let i=0;i<3;i++){
+            let longMomKgmm = calc.netKg[i] * DIST_LONG[i];
+            let latMomKgmm = calc.netKg[i] * DIST_LAT[i];
+            let longMomDisplay = (momentUnit === 'lbin') ? formatBr(longMomKgmm * KG_TO_LB * MM_TO_INCH, 2) + " lb·in" : formatBr(longMomKgmm, 2) + " kg·mm";
+            let latMomDisplay = (momentUnit === 'lbin') ? formatBr(latMomKgmm * KG_TO_LB * MM_TO_INCH, 2) + " lb·in" : formatBr(latMomKgmm, 2) + " kg·mm";
+            let distLongDisplay = (momentUnit === 'lbin') ? formatBr(DIST_LONG[i] * MM_TO_INCH, 2) + " pol" : DIST_LONG[i] + " mm";
+            let distLatDisplay = (momentUnit === 'lbin') ? formatBr(DIST_LAT[i] * MM_TO_INCH, 2) + " pol" : DIST_LAT[i] + " mm";
+            html += `<tr><td>${pontos[i]}</td><td>${distLongDisplay}</td><td>${longMomDisplay}</td><td>${distLatDisplay}</td><td>${latMomDisplay}</td></tr>`;
+        }
+        let totalLongDisplay = (momentUnit === 'lbin') ? formatBr(calc.momentoLongLbin, 2) + " lb·in" : formatBr(calc.momentoLongKgmm, 2) + " kg·mm";
+        let totalLatDisplay = (momentUnit === 'lbin') ? formatBr(calc.momentoLatLbin, 2) + " lb·in" : formatBr(calc.momentoLatKgmm, 2) + " kg·mm";
+        html += `<tr style="background:#f0f8f2;"><td><strong>MOMENTO TOTAL</strong></td><td></td><td><strong>${totalLongDisplay}</strong></td><td></td><td><strong>${totalLatDisplay}</strong></td></tr>`;
+        html += `</tbody></table>
+        <div class="cg-highlight"><div>📍 CG LONGITUDINAL: <strong>${formatBr(calc.cgLong * MM_TO_INCH, 2)} pol</strong> (${formatBr(calc.cgLong, 2)} mm)</div>
+        <div>📍 CG LATERAL: <strong>${formatBr(calc.cgLat * MM_TO_INCH, 2)} pol</strong> (${formatBr(calc.cgLat, 2)} mm) - Direita positivo</div></div></div>`;
+
+        const qualityUnit = tableDisplayUnits.quality;
+        const qualityThemeClass = qualityUnit === 'lb' ? 'imperial-theme' : 'metric-theme';
+        html += `<div class="result-card ${qualityThemeClass}">
+            <div class="table-unit-toggle">
+                <button class="unit-toggle-btn ${qualityUnit === 'lb' ? 'imperial active' : 'imperial'}" data-table="quality" data-unit="lb">Mostrar em libras (3 casas)</button>
+                <button class="unit-toggle-btn ${qualityUnit === 'kg' ? 'metric active' : 'metric'}" data-table="quality" data-unit="kg">Mostrar em kg (3 casas)</button>
+            </div>
+            <h3>📈 Controle de Qualidade da Pesagem (3 casas decimais)</h3>
+            <table><thead><tr><th>Parâmetro</th><th>Valor</th><th>Sequência</th></tr></thead><tbody>
+            <tr><td>Peso Bruto Total (Pesagem 1)</td><td>${formatPeso(calc.pesoBrutoPorPesagem[0], qualityUnit)}</td><td rowspan="3">📊 3 pesagens consecutivas</td></tr>
+            <tr><td>Peso Bruto Total (Pesagem 2)</td><td>${formatPeso(calc.pesoBrutoPorPesagem[1], qualityUnit)}</td></tr>
+            <tr><td>Peso Bruto Total (Pesagem 3)</td><td>${formatPeso(calc.pesoBrutoPorPesagem[2], qualityUnit)}</td></tr>
+            <tr style="background:#e9f3e9;"><td><strong>Maior Peso Bruto</strong></td><td><strong>${formatPeso(calc.maiorBruto, qualityUnit)}</strong></td><td>🔺</td></tr>
+            <tr style="background:#e9f3e9;"><td><strong>Menor Peso Bruto</strong></td><td><strong>${formatPeso(calc.menorBruto, qualityUnit)}</strong></td><td>🔻</td></tr>
+            <tr><td><strong>Diferença Nominal</strong></td><td><strong>${formatPeso(calc.maiorBruto - calc.menorBruto, qualityUnit)}</strong></td><td>⬌</td></tr>
+            <tr><td><strong>Diferença Percentual</strong></td><td colspan="2"><strong>${formatBr(calc.diffPercent, 2)}%</strong> (critério repetibilidade)</td></tr>
+            </tbody></table></div>`;
+
+        let reg = state.registro;
+        html += `<div class="result-card">
+            <h3>✍️ Certificação da Pesagem</h3>
+            <table class="certification-table">
+                <tr><td>Matrícula:</td><td>${reg.marcas}</td><td>Modelo:</td><td>${reg.modelo}</td></tr>
+                <tr><td>Nº Série:</td><td>${reg.serial}</td><td>Ano Fab:</td><td>${reg.anoFab}</td></tr>
+                <tr><td>Data Execução:</td><td>${reg.dataExec || "—"}</td><td>Vencto Calib:</td><td>${reg.vencCal || "—"}</td></tr>
+                <tr><td>Mecânico:</td><td>${reg.mecanico}</td><td>Inspetor:</td><td>${reg.inspetor}</td></tr>
+                <tr><td colspan="4"><hr></td></tr>
+            </table>
+        </div>`;
+        document.getElementById("resultadosDinamicos").innerHTML = html;
+        
+        document.querySelectorAll('.unit-toggle-btn[data-table]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const table = btn.dataset.table;
+                const unit = btn.dataset.unit;
+                if (table && unit) {
+                    tableDisplayUnits[table] = unit;
+                    renderizarResultados();
+                }
+            });
+        });
+    }
+
+    // ----- RELATÓRIO FINAL (WEIGHING REPORT) -----
+    function formatDateISOtoBR(isoStr) {
+        if (!isoStr) return "—";
+        const [y, m, d] = isoStr.split("-");
+        return `${d}/${m}/${y}`;
+    }
+
+    function gerarRelatorio(unit) {
+        const calc = calcularResultados();
+        const reg = state.registro;
+        const isLb = (unit === "lb");
+
+        function p(valKg) { return isLb ? valKg / LB_TO_KG : valKg; }
+        function mLong(valKgmm) { return isLb ? valKgmm * KG_TO_LB * MM_TO_INCH : valKgmm; }
+        function mLat(valKgmm) { return isLb ? valKgmm * KG_TO_LB * MM_TO_INCH : valKgmm; }
+        function inch(val) { return val * MM_TO_INCH; }
+
+        let net = calc.netKg;
+        let gross = calc.grossKg;
+        let tara = calc.tara;
+        let momentLong = [net[0]*DIST_LONG[0], net[1]*DIST_LONG[1], net[2]*DIST_LONG[2]];
+        let momentLat = [net[0]*DIST_LAT[0], net[1]*DIST_LAT[1], net[2]*DIST_LAT[2]];
+
+        let somaMomentLong = momentLong[0]+momentLong[1]+momentLong[2];
+        let somaMomentLat = momentLat[0]+momentLat[1]+momentLat[2];
+        let emptyWeight = calc.pesoVazioKg;
+        let cgLong = calc.cgLong;
+        let cgLat = calc.cgLat;
+
+        function f(val, dec=2) { return formatBr(val, dec); }
+
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weighing Report</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .table-wrapper { position: relative; width: 800px; margin: 0 auto; }
+        table { border-collapse: collapse; width: 100%; font-size: 10px; table-layout: fixed; position: relative; z-index: 1; }
+        th, td { border: 2px solid #8a8f99; padding: 4px; text-align: center; vertical-align: middle; position: relative; overflow: visible; }
+        .linha-tripla { height: 75px; }
+        .linha-dupla  { height: 50px; }
+        .linha-normal { height: 25px; }
+        .cinza { background-color: lightgray; }
+
+        .seta-horizontal::after { content: ""; position: absolute; top: 50%; left: 12.5%; width: 75%; height: 3px; background: black; transform: translateY(-50%); }
+        .seta-horizontal::before { content: ""; position: absolute; top: 50%; right: 12.5%; transform: translateY(-50%); width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid black; }
+
+        .seta-vert1::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: calc(100px - 2mm);
+    background: black;
+}
+.seta-vert1::before {
+    content: "";
+    position: absolute;
+    top: calc(100% + (100px - 2mm));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 12px solid black;
+}
+        .seta-vert2::after { content: ""; position: absolute; top: 100%; left: 75%; transform: translateX(-50%); width: 3px; height: 51px; background: black; }
+        .seta-vert2::before { content: ""; position: absolute; top: calc(100% + 51px); left: 75%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid black; }
+        .seta-vert3::after { content: ""; position: absolute; top: 100%; left: 75%; transform: translateX(-50%); width: 3px; height: 51px; background: black; }
+        .seta-vert3::before { content: ""; position: absolute; top: calc(100% + 51px); left: 75%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid black; }
+        .seta-vert4::after { content: ""; position: absolute; top: 50%; left: 98.6%; transform: translateX(-50%); width: 3px; height: 47px; background: black; }
+        .seta-vert4::before { content: ""; position: absolute; top: 50%; left: 98.6%; transform: translateX(-50%); margin-top: 47px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid black; }
+
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .valign-top { vertical-align: top; }
+        .valign-middle { vertical-align: middle; }
+        .valign-bottom { vertical-align: bottom; }
+        .fs8 { font-size: 8pt; }
+        .fs9 { font-size: 9pt; }
+        .fs10 { font-size: 10pt; }
+        .fs11 { font-size: 11pt; }
+        .fs12 { font-size: 12pt; }
+        .fs13 { font-size: 13pt; }
+        .fs18 { font-size: 18pt; font-weight: bold; }
+        .bold { font-weight: bold; }
+        .relative-container { position: relative; width: 100%; height: 100%; }
+        .top-center { position: absolute; top: 4px; left: 0; right: 0; text-align: center; }
+        .bottom-left { position: absolute; bottom: 4px; left: 6px; text-align: left; }
+        .dados-futuros { text-align: right; vertical-align: middle; }
+        .linha-notas { line-height: 0.3; }
+
+        .overlay-image { position: absolute; top: calc(75px - 3mm); left: 400px; width: 397px; height: 236px; object-fit: contain; z-index: 2; opacity: 0.85; }
+
+        @media print {
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .seta-vert1::after, .seta-vert1::before, .seta-vert2::after, .seta-vert2::before,
+            .seta-vert3::after, .seta-vert3::before, .seta-vert4::after, .seta-vert4::before,
+            .seta-horizontal::after, .seta-horizontal::before { visibility: visible !important; opacity: 1 !important; }
+            span[style*="color: white"], span[style*="color:white"] { color: transparent !important; }
+            .overlay-image { visibility: visible !important; opacity: 0.85 !important; z-index: 2 !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="table-wrapper">
+    <img src="https://i.imgur.com/y7Z8vYV.png" alt="Aircraft drawing" class="overlay-image">
+    <table>
+        <colgroup>
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+            <col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;"><col style="width: 2.7778%;">
+        </colgroup>
+
+        <tr><td colspan="36" class="linha-tripla" style="position: relative;"><div class="relative-container"><div class="top-center fs18">Weighing Report</div><div class="bottom-left fs12 bold">General Information</div></div></td></tr>
+
+        <tr class="linha-dupla">
+            <td colspan="9" class="fs9 text-left valign-top">Model:<br><span style="color: white; font-size: 12pt;">xxx</span><br><span style="font-size: 12pt; font-weight: bold;">${reg.modelo}</span></td>
+            <td colspan="9" class="fs9 text-left valign-top">Serial No.:<br><span style="color: white; font-size: 12pt;">xxx</span><br><span style="font-size: 12pt; font-weight: bold;">${reg.serial}</span></td>
+            <td colspan="18" rowspan="4" class="fs10 text-left valign-bottom" style="padding: 6px;">
+                Reference Plane: <span style="color: white;">____._</span>X0<br>
+                Weighing Point. FWD: <span style="color: white;">__</span>X1 = ${DIST_LONG[0]} mm (${f(inch(DIST_LONG[0]), 2)} in)<br>
+                Weighing Point. AFT: <span style="color: white;">___</span>X2/X3 = ${DIST_LONG[1]} mm (${f(inch(DIST_LONG[1]), 2)} in)
+            </td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="9" class="fs9 text-left valign-top">Year of Manufacture:<br><span style="color: white; font-size: 12pt;">xxx</span><br><span style="font-size: 12pt; font-weight: bold;">${reg.anoFab}</span></td>
+            <td colspan="9" class="fs9 text-left valign-top">Registration No.:<br><span style="color: white; font-size: 12pt;">xxx</span><br><span style="font-size: 12pt; font-weight: bold;">${reg.marcas}</span></td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="9" class="fs9 text-left valign-top">Weighing Date:<br><span style="color: white; font-size: 12pt;">xxx</span><br><span style="font-size: 12pt; font-weight: bold;">${formatDateISOtoBR(reg.dataExec)}</span></td>
+            <td colspan="9" class="fs9 text-left valign-top">Equipment List Date:<br><span style="color: white; font-size: 12pt;">xxx</span><br><span style="font-size: 12pt; font-weight: bold;">${formatDateISOtoBR(reg.vencCal)}</span></td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="9" class="fs9 text-left valign-top">Prepared By:<br><span style="color: white; font-size: 11pt;">xxx</span><br><span style="font-size: 11pt; font-weight: bold;">${reg.mecanico}</span></td>
+            <td colspan="9" class="fs9 text-left valign-top">Inspector:<br><span style="color: white; font-size: 11pt;">xxx</span><br><span style="font-size: 11pt; font-weight: bold;">${reg.inspetor}</span></td>
+        </tr>
+
+        <tr><td colspan="36" class="linha-dupla fs12 bold text-left valign-bottom" style="padding-left: 8px;">Weighing Result:</td></tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="8" class="fs11 text-left valign-top">Prepared By:</td>
+            <td colspan="4" class="fs9 text-center valign-middle">[Column A]<br>Gross Wt.<br>(${isLb ? 'lb' : 'Kg'})</td>
+            <td colspan="4" class="fs9 text-center valign-middle">[Column B]<br>Tare<br>(${isLb ? 'lb' : 'Kg'})</td>
+            <td colspan="4" class="fs9 text-center valign-middle">[Column C]<br>Net Wt.<br>(${isLb ? 'lb' : 'Kg'})</td>
+            <td colspan="4" class="fs9 text-center valign-middle">Arm-Long</td>
+            <td colspan="4" class="fs9 text-center valign-middle">[1 long]<br>Moment-Long<br>(${isLb ? 'lb·in' : 'kgmm'})</td>
+            <td colspan="4" class="fs9 text-center valign-middle">Arm-Lat</td>
+            <td colspan="4" class="fs9 text-center valign-middle">[1 lat]<br>Moment-Lat<br>(${isLb ? 'lb·in' : 'kgmm'})</td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="8" class="fs13 text-left valign-middle">X1 FWD</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(gross[0]), 3)}</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(tara[0]), 3)}</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(net[0]), 3)}</td>
+            <td colspan="4" class="fs9 text-center valign-middle">${DIST_LONG[0]} mm<br>(${f(inch(DIST_LONG[0]), 2)} in)</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(mLong(momentLong[0]), 2)}</td>
+            <td colspan="4" class="fs9 text-center valign-middle">0</td>
+            <td colspan="4" class="dados-futuros fs10 bold">0,00</td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="8" class="fs13 text-left valign-middle">X2 AFT LH</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(gross[1]), 3)}</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(tara[1]), 3)}</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(net[1]), 3)}</td>
+            <td colspan="4" class="fs9 text-center valign-middle">${DIST_LONG[1]} mm<br>(${f(inch(DIST_LONG[1]), 2)} in)</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(mLong(momentLong[1]), 2)}</td>
+            <td colspan="4" class="fs9 text-center valign-middle">${DIST_LAT[1]} mm<br>(${f(inch(DIST_LAT[1]), 2)} in)</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(mLat(momentLat[1]), 2)}</td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="8" class="fs13 text-left valign-middle">X3 AFT RH</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(gross[2]), 3)}</td>
+            <td colspan="4" class="dados-futuros fs10 bold">${f(p(tara[2]), 3)}</td>
+            <td colspan="4" class="seta-vert1 dados-futuros fs10 bold">${f(p(net[2]), 3)}</td>
+            <td colspan="4" class="fs9 text-center valign-middle">${DIST_LONG[2]} mm<br>(${f(inch(DIST_LONG[2]), 2)} in)</td>
+            <td colspan="4" class="seta-vert2 dados-futuros fs10 bold">${f(mLong(momentLong[2]), 2)}</td>
+            <td colspan="4" class="fs9 text-center valign-middle">${DIST_LAT[2]} mm<br>(${f(inch(DIST_LAT[2]), 2)} in)</td>
+            <td colspan="4" class="seta-vert3 dados-futuros fs10 bold">${f(mLat(momentLat[2]), 2)}</td>
+        </tr>
+
+        <tr><td colspan="36" class="linha-normal seta-vert4" style="height: 37px;"></td></tr>
+
+        <tr class="linha-dupla" style="height: 74px;">
+            <td colspan="24" class="fs10 text-left valign-middle" style="padding-left: 6px;">Empty-Weight Moment:<br>(= Sum of Moments)</td>
+            <td colspan="4" class="valign-top" style="padding-top: 4px;">
+                <div style="text-align: left; font-size: 9pt; color: black;">[2 long]</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: right; font-size: 9pt; font-weight: bold; color: black;">${f(mLong(somaMomentLong), 2)}</div>
+            </td>
+            <td colspan="4" class="cinza"></td>
+            <td colspan="4" class="valign-top" style="padding-top: 4px;">
+                <div style="text-align: left; font-size: 9pt; color: black;">[2 lat]</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: right; font-size: 10pt; font-weight: bold; color: black;">${f(mLat(somaMomentLat), 2)}</div>
+            </td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 74px;">
+            <td colspan="16" class="fs10 text-left valign-middle" style="padding-left: 6px;">Empty-Weight<br>(= Sum of Net Weights)</td>
+            <td colspan="4" class="valign-top" style="padding-top: 4px;">
+                <div style="text-align: left; font-size: 9pt; color: black;">[3]</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: right; font-size: 11pt; font-weight: bold; color: black;">${f(p(emptyWeight), 3)}</div>
+            </td>
+            <td colspan="4" class="cinza seta-horizontal"></td>
+            <td colspan="4" class="valign-top" style="padding-top: 4px;">
+                <div style="text-align: left; font-size: 9pt; color: black;">[3]</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: right; font-size: 11pt; font-weight: bold; color: black;">${f(p(emptyWeight), 3)}</div>
+            </td>
+            <td colspan="4" class="cinza seta-horizontal"></td>
+            <td colspan="4" class="valign-top" style="padding-top: 4px;">
+                <div style="text-align: left; font-size: 9pt; color: black;">[3]</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: right; font-size: 11pt; font-weight: bold; color: black;">${f(p(emptyWeight), 3)}</div>
+            </td>
+        </tr>
+
+        <tr class="linha-tripla" style="height: 99px;">
+            <td colspan="24" class="fs10 text-left valign-middle" style="padding-left: 6px;">Empty-Weight Center of Gravity:<br>(=Empty-Weight Moment divided by Empty-Weight)</td>
+            <td colspan="4" class="valign-top" style="padding: 4px;">
+                <div style="text-align: left; font-size: 9pt; color: black;">[4 long]</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: right; font-size: 11pt; font-weight: bold; color: black;">${f(isLb ? cgLong*MM_TO_INCH : cgLong, 2)}</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: center; font-size: 9pt; color: black;">Longitudinal</div>
+                <div style="text-align: center; font-size: 9pt; color: black;">CofG ${isLb ? 'in' : 'mm'}</div>
+            </td>
+            <td colspan="4" class="cinza"></td>
+            <td colspan="4" class="valign-top" style="padding: 4px;">
+                <div style="text-align: left; font-size: 9pt; color: black;">[4 lat]</div>
+                <div style="text-align: left; font-size: 12pt; color: white;">XXX</div>
+                <div style="text-align: right; font-size: 11pt; font-weight: bold; color: black;">${f(isLb ? cgLat*MM_TO_INCH : cgLat, 2)}</div>
+                <div style="text-align: left; font-size: 13pt; color: white;">XXX</div>
+                <div style="text-align: center; font-size: 9pt; color: black;">Lateral</div>
+                <div style="text-align: center; font-size: 9pt; color: black;">CofG ${isLb ? 'in' : 'mm'}</div>
+            </td>
+        </tr>
+
+        <tr class="linha-dupla" style="height: 62px;">
+            <td colspan="36" class="fs10 text-left valign-middle linha-notas" style="padding: 8px 12px;">
+                <span style="color: white;">.</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size: 30pt;">.</span>&nbsp;&nbsp;&nbsp;&nbsp;For definition of the empty-Weight and for the Equipment List refer to the FLM.<br>
+                <span style="color: white;">.</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size: 30pt;">.</span>&nbsp;&nbsp;&nbsp;&nbsp;Unusable fuel included in calculations.
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>`;
+        return html;
+    }
+
+    function imprimirRelatorio(unit) {
+        capturePesagens();
+        captureRegistro();
+        const reportHTML = gerarRelatorio(unit);
+        const w = window.open('', '_blank', 'width=900,height=800');
+        w.document.write(reportHTML);
+        w.document.close();
+        w.focus();
+        w.print();
+    }
+
+    function imprimirPlanilhas(unit) {
+        tableDisplayUnits.main = unit;
+        tableDisplayUnits.moments = unit === 'lb' ? 'lbin' : 'kgmm';
+        tableDisplayUnits.quality = unit;
+        renderizarResultados();
+        setTimeout(() => {
+            window.print();
+        }, 200);
+    }
+
+    // Navegação
+    let currentStep = 0;
+    function showStep(step) {
+        for(let i=0;i<=3;i++) document.getElementById(`step${i}`).classList.remove("active-step");
+        document.getElementById(`step${step}`).classList.add("active-step");
+        document.querySelectorAll(".step-tab").forEach((tab,idx)=>{
+            if(idx===step) tab.classList.add("active");
+            else tab.classList.remove("active");
+            if(idx<step) tab.classList.add("completed");
+            else tab.classList.remove("completed");
+        });
+        currentStep = step;
+        if(step===3) { capturePesagens(); renderizarResultados(); }
+    }
+    function validarStep0() { captureRegistro(); return true; }
+    function validarStep1() { 
+        let t1 = document.getElementById("taraX1").value, t2 = document.getElementById("taraX2").value, t3 = document.getElementById("taraX3").value;
+        if(t1===""||t2===""||t3==="") { alert("Preencha os valores de tara (pode ser 0)."); return false; }
+        captureTara(); 
+        return true;
+    }
+    function validarStep2() {
+        let ids = ["x1_p1","x1_p2","x1_p3","x2_p1","x2_p2","x2_p3","x3_p1","x3_p2","x3_p3"];
+        if(ids.some(id=>document.getElementById(id).value==="")) { alert("Preencha todas as 9 leituras de pesagem."); return false; }
+        capturePesagens();
+        return true;
+    }
+
+    document.getElementById("nextStep0").onclick = () => { if(validarStep0()) showStep(1); };
+    document.getElementById("prevStep1").onclick = () => showStep(0);
+    document.getElementById("nextStep1").onclick = () => { if(validarStep1()) showStep(2); };
+    document.getElementById("prevStep2").onclick = () => showStep(1);
+    document.getElementById("nextStep2").onclick = () => { if(validarStep2()) showStep(3); };
+    document.getElementById("prevStep3").onclick = () => showStep(2);
+    document.getElementById("resetAllBtn").onclick = () => { if(confirm("Nova pesagem? Todos os dados serão apagados.")) location.reload(); };
+
+    document.getElementById("printReportLb").addEventListener("click", () => imprimirRelatorio("lb"));
+    document.getElementById("printReportKg").addEventListener("click", () => imprimirRelatorio("kg"));
+    document.getElementById("printPlanilhasLb").addEventListener("click", () => imprimirPlanilhas("lb"));
+    document.getElementById("encerrarBtn").addEventListener("click", () => {
+        window.location.href = 'about:blank';
+    });
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+    fullscreenBtn.addEventListener("click", () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+
+    function setTaraUnit(unit) {
+        state.taraUnitInput = unit;
+        applyTaraTheme();
+    }
+    function setPesagemUnit(unit) {
+        state.unidadePesagemInput = unit;
+        applyPesagemTheme();
+    }
+    document.getElementById("taraLbBtn").onclick = () => setTaraUnit("lb");
+    document.getElementById("taraKgBtn").onclick = () => setTaraUnit("kg");
+    document.getElementById("pesagemLbBtn").onclick = () => setPesagemUnit("lb");
+    document.getElementById("pesagemKgBtn").onclick = () => setPesagemUnit("kg");
+    
+    // MODIFICAÇÃO: Tara padrão em kg
+    setTaraUnit("kg");
+    setPesagemUnit("lb");
+    
+    document.getElementById("dataExec").valueAsDate = new Date();
+    let anoFuturo = new Date(); anoFuturo.setFullYear(anoFuturo.getFullYear()+1);
+    document.getElementById("vencCal").valueAsDate = anoFuturo;
+    document.getElementById("marcas").value = "PR-AIG";
+    document.getElementById("serial").value = "20179";
+    document.getElementById("anoFab").value = "2019";
+    document.getElementById("mecanico").value = "FABRÍCIO / UCHÔA";
+    document.getElementById("inspetor").value = "LUIZ MELLO";
+    // MODIFICAÇÃO: Valores de tara com 3 casas decimais em kg
+    document.getElementById("taraX1").value = "0.580";
+    document.getElementById("taraX2").value = "0.930";
+    document.getElementById("taraX3").value = "0.930";
+    // MODIFICAÇÃO: Valores de pesagem com 3 casas decimais em libras
+    document.getElementById("x1_p1").value = "824.000"; document.getElementById("x1_p2").value = "840.000"; document.getElementById("x1_p3").value = "830.000";
+    document.getElementById("x2_p1").value = "2122.000"; document.getElementById("x2_p2").value = "2148.000"; document.getElementById("x2_p3").value = "2144.000";
+    document.getElementById("x3_p1").value = "2430.000"; document.getElementById("x3_p2").value = "2404.000"; document.getElementById("x3_p3").value = "2406.000";
+    
+    showStep(0);
+</script>
+</body>
+</html>
