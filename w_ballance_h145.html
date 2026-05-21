@@ -1035,17 +1035,19 @@ html += `<tr style="background:#e8f3ec;"><td><strong>PESO VAZIO</strong></td><td
     // Navegação
     let currentStep = 0;
     function showStep(step) {
-        for(let i=0;i<=3;i++) document.getElementById(`step${i}`).classList.remove("active-step");
-        document.getElementById(`step${step}`).classList.add("active-step");
-        document.querySelectorAll(".step-tab").forEach((tab,idx)=>{
-            if(idx===step) tab.classList.add("active");
-            else tab.classList.remove("active");
-            if(idx<step) tab.classList.add("completed");
-            else tab.classList.remove("completed");
-        });
-        currentStep = step;
-        if(step===3) { capturePesagens(); renderizarResultados(); }
-    }
+    for(let i=0;i<=3;i++) document.getElementById(`step${i}`).classList.remove("active-step");
+    document.getElementById(`step${step}`).classList.add("active-step");
+    document.querySelectorAll(".step-tab").forEach((tab,idx)=>{
+        if(idx===step) tab.classList.add("active");
+        else tab.classList.remove("active");
+        if(idx<step) tab.classList.add("completed");
+        else tab.classList.remove("completed");
+    });
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // ← ADICIONE ESTA LINHA
+    if(step===3) { capturePesagens(); renderizarResultados(); }
+}
+
     function validarStep0() { captureRegistro(); return true; }
     function validarStep1() { 
         let t1 = document.getElementById("taraX1").value, t2 = document.getElementById("taraX2").value, t3 = document.getElementById("taraX3").value;
