@@ -357,6 +357,10 @@
             width: 180px;
         }
 
+.certification-table td:nth-child(3) {
+    font-weight: bold;
+}
+
         @media print {
             body { background: white; }
             .header, .steps-nav, .button-group, .fullscreen-btn, footer, .table-unit-toggle, .unit-buttons {
@@ -661,7 +665,10 @@
                 <td>${formatPeso(calc.netKg[i], mainUnit)}</td>
             </tr>`;
         }
-        html += `<tr style="background:#e8f3ec;"><td><strong>PESO VAZIO</strong></td><td colspan="4"></td><td></td><td>${formatPeso(calc.pesoVazioKg, mainUnit)}</td></tr>`;
+        
+let emptyWeightValue = mainUnit === "lb" ? calc.pesoVazioKg / LB_TO_KG : calc.pesoVazioKg;
+html += `<tr style="background:#e8f3ec;"><td><strong>PESO VAZIO</strong></td><td colspan="4"></td><td></td><td><strong>${formatBr(emptyWeightValue, 3)}</strong> ${mainUnit}</td></tr>`;
+
         html += `</tbody></table></div>`;
 
         const momentUnit = tableDisplayUnits.moments;
@@ -704,7 +711,7 @@
             <tr style="background:#e9f3e9;"><td><strong>Maior Peso Bruto</strong></td><td><strong>${formatPeso(calc.maiorBruto, qualityUnit)}</strong></td><td>🔺</td></tr>
             <tr style="background:#e9f3e9;"><td><strong>Menor Peso Bruto</strong></td><td><strong>${formatPeso(calc.menorBruto, qualityUnit)}</strong></td><td>🔻</td></tr>
             <tr><td><strong>Diferença Nominal</strong></td><td><strong>${formatPeso(calc.maiorBruto - calc.menorBruto, qualityUnit)}</strong></td><td>⬌</td></tr>
-            <tr><td><strong>Diferença Percentual</strong></td><td colspan="2"><strong>${formatBr(calc.diffPercent, 2)}%</strong> (critério repetibilidade)</td></tr>
+            <tr><td><strong>Diferença Percentual</strong></td><td colspan="2"><strong>${formatBr(calc.diffPercent, 2)}%</strong> (Aprovado somente se menor que 1%)</td></tr>
             </tbody></table></div>`;
 
         let reg = state.registro;
