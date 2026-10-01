@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Quiz · Cartografia</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Verdana', 'Arial', sans-serif;
+            background: #eef2f7;
+            color: #2d3748;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            margin: 0;
+        }
+        .quiz-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(45, 55, 72, 0.08);
+            padding: 14px 18px;
+            border: 1px solid #cbd5e0;
+            min-height: 60vh;
+            transition: all 0.2s;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .blank-screen {
+            display: none;
+            width: 100%;
+            min-height: 60vh;
+            background: transparent;
+        }
+        .blank-screen.active { display: block; }
+        .wrapper-blank {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sub {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .opt-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 12px 18px;
+            font-size: 1.05rem;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #2d3748;
+            text-align: left;
+            line-height: 1.5;
+            font-family: inherit;
+            font-weight: 500;
+            width: 100%;
+        }
+        .opt-btn:hover {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .opt-btn.selected {
+            background: #2b6cb0;
+            color: #ffffff;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .feedback.correct { background: #f0fff4; border-left: 6px solid #38a169; }
+        .feedback.wrong { background: #fff5f5; border-left: 6px solid #e53e3e; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 16px 0 8px;
+        }
+        .tool-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 48px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            color: #2d3748;
+            font-weight: 600;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .tool-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .tool-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .progress {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #2b6cb0;
+            text-align: right;
+            font-weight: 600;
+        }
+        .font-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .font-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 0.9rem;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .font-btn:hover { background: #cbd5e0; }
+        .result-screen { text-align: center; }
+        .result-box {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .action-btn:hover { background: #2c5282; }
+        .action-btn.end-btn { background: #dd6b20; }
+        .action-btn.end-btn:hover { background: #c05621; }
+        .stats { font-size: 1.1rem; line-height: 1.8; }
+
+        .capa {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .capa h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #2b6cb0;
+        }
+        .capa h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #dd6b20;
+        }
+        .capa .subtitulo {
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        .capa .autora {
+            font-size: 17px;
+            color: #718096;
+            margin-top: 24px;
+            font-style: italic;
+        }
+        .capa .info-quiz {
+            font-size: 15px;
+            color: #718096;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .start-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 22px;
+            font-weight: bold;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .start-btn:hover { background: #2c5282; }
+
+        @media (max-width: 640px) {
+            .quiz-wrapper { padding: 10px 12px; border-radius: 18px; }
+            .opt-btn { padding: 10px 14px; font-size: 1rem; }
+            .capa h1 { font-size: 19px; }
+            .capa h2 { font-size: 14px; }
+            .title { font-size: 1.15rem; }
+            .question-text { font-size: 0.96rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-wrapper" id="mainWrapper">
+    <!-- TELA DE CAPA -->
+    <div id="capaScreen" class="screen active">
+        <div class="capa">
+            <h1>🗺️ Quiz de Revisão</h1>
+            <h2>Cartografia</h2>
+            <p class="subtitulo">Definição e Campo de Atuação · Escalas · Projeções Cartográficas (Mercator e Peters)<br>
+            Coordenadas Geográficas · Datum e Sistemas de Referência · Curvas de Nível<br>
+            Tipos de Mapas · GNSS e Sensoriamento Remoto · Generalização Cartográfica</p>
+            <p class="autora">Material de Estudos · Geografia / Cartografia</p>
+            <p class="info-quiz">10 questões objetivas, com 3 alternativas cada</p>
+            <button class="start-btn" id="startQuizBtn">▶ Iniciar Quiz</button>
+        </div>
+    </div>
+
+    <!-- TELA DO QUIZ -->
+    <div id="quizScreen" class="screen">
+        <div class="font-controls">
+            <button class="font-btn" id="fontMinus">A−</button>
+            <button class="font-btn" id="fontPlus">A+</button>
+            <button class="font-btn" id="fullscreenBtn">⛶ Tela cheia</button>
+        </div>
+        <div class="title">🗺️ Cartografia</div>
+        <div class="sub">10 questões objetivas com 3 alternativas</div>
+        <div class="progress" id="progressText">Questão 1 de 10</div>
+        <div id="questionArea">
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsArea"></div>
+            <div class="feedback" id="feedbackArea" style="display: none;"></div>
+        </div>
+        <div class="toolbar">
+            <button class="tool-btn" id="prevBtn" disabled>◀ Anterior</button>
+            <button class="tool-btn" id="nextBtn" disabled>Próxima ▶</button>
+        </div>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div id="resultScreen" class="screen result-screen">
+        <h2>🎉 Parabéns! Você concluiu o teste.</h2>
+        <div class="result-box" id="resultContent"></div>
+        <button class="action-btn" id="restartQuizBtn">🔄 Refazer quiz</button>
+        <button class="action-btn end-btn" id="endQuizBtn">🏁 Encerrar (página em branco)</button>
+    </div>
+
+    <!-- TELA EM BRANCO -->
+    <div class="blank-screen" id="blankScreen"></div>
+</div>
+
+<script>
+    const questions = [
+        {
+            text: "A cartografia é definida como a ciência, a arte e a técnica de elaborar e utilizar mapas. Sobre o seu campo de atuação, assinale a alternativa CORRETA:",
+            options: [
+                "Limita-se à confecção de mapas impressos, não abrangendo produtos digitais, cartas náuticas ou imagens de satélite.",
+                "Abrange a concepção, a produção, a difusão e a utilização de representações da superfície terrestre, incluindo mapas, cartas, plantas, croquis e produtos digitais (SIG).",
+                "Restringe-se ao estudo da forma e das dimensões da Terra (geodésia), sem relação com a representação gráfica do espaço geográfico."
+            ],
+            correct: 1,
+            justification: "A cartografia abrange todo o processo de representação da superfície terrestre — da concepção e produção à difusão e utilização —, incluindo mapas, cartas, plantas, croquis e produtos digitais como os Sistemas de Informação Geográfica (SIG). Não se limita a mapas impressos (A) nem se confunde com a geodésia (C), que é apenas uma das ciências que lhe fornecem base matemática."
+        },
+        {
+            text: "Em um mapa cuja escala numérica é 1:50.000, uma distância de 2 cm medida com a régua sobre o mapa corresponde, no terreno, a:",
+            options: [
+                "1 km",
+                "10 km",
+                "100 km"
+            ],
+            correct: 0,
+            justification: "Na escala 1:50.000, cada 1 cm no mapa equivale a 50.000 cm no terreno. Assim, 2 cm × 50.000 = 100.000 cm = 1.000 m = 1 km. Lembre-se: quanto MAIOR o denominador da escala, MENOR é o nível de detalhe representado (escala pequena)."
+        },
+        {
+            text: "A projeção cilíndrica conforme elaborada por Gerardus Mercator, no século XVI, caracteriza-se por:",
+            options: [
+                "Preservar as áreas dos continentes em detrimento das formas, sendo ideal para mapas temáticos de densidade populacional.",
+                "Preservar os ângulos e as formas locais, mas apresentar enormes distorções de área nas regiões de altas latitudes.",
+                "Representar a Terra como um globo, sem qualquer tipo de distorção ou deformação."
+            ],
+            correct: 1,
+            justification: "A projeção de Mercator é CONFORME: preserva os ângulos e, localmente, as formas, o que a torna excelente para a navegação (linhas de rumo retas). Em contrapartida, as áreas são fortemente distorcidas nas altas latitudes — a Groenlândia, por exemplo, aparece com área comparável à da África. A alternativa A descreve uma projeção equivalente (como a de Peters), e a C descreve o globo terrestre, que não é uma projeção."
+        },
+        {
+            text: "A projeção de Gall-Peters, proposta como alternativa à de Mercator, ficou conhecida por:",
+            options: [
+                "Ser uma projeção equivalente, que preserva a proporção das áreas dos continentes, ainda que distorça suas formas.",
+                "Ser uma projeção conforme, que preserva as formas e os ângulos dos continentes.",
+                "Ser uma projeção azimutal, centrada no Polo Norte, usada em mapas políticos."
+            ],
+            correct: 0,
+            justification: "A projeção de Gall-Peters é uma projeção cilíndrica EQUIVALENTE: mantém a proporção entre as áreas representadas e as áreas reais, corrigindo a distorção de Mercator. Em troca, deforma as formas dos continentes (alonga-os no sentido norte-sul). Tornou-se símbolo de uma cartografia com preocupação social, por dar maior destaque às nações do hemisfério sul."
+        },
+        {
+            text: "Um ponto da superfície terrestre está localizado a 20° de latitude Sul (20° S) e 45° de longitude Oeste (45° W). Em relação à Linha do Equador e ao Meridiano de Greenwich, esse ponto encontra-se:",
+            options: [
+                "No hemisfério Norte e a leste de Greenwich.",
+                "No hemisfério Sul e a oeste de Greenwich.",
+                "No hemisfério Sul e a leste de Greenwich."
+            ],
+            correct: 1,
+            justification: "A latitude Sul indica que o ponto está ao sul da Linha do Equador (hemisfério Sul). A longitude Oeste (W) indica que o ponto está a oeste do Meridiano de Greenwich (hemisfério ocidental). Logo, o ponto situa-se no hemisfério Sul e a oeste de Greenwich."
+        },
+        {
+            text: "Desde 2005, o datum geodésico oficial do Sistema Geodésico Brasileiro (SGB), adotado pelo IBGE para a produção de cartas e mapas, é o:",
+            options: [
+                "SAD 69 (South American Datum 1969)",
+                "WGS 84 (World Geodetic System 1984)",
+                "SIRGAS 2000 (Sistema de Referência Geocêntrico para as Américas)"
+            ],
+            correct: 2,
+            justification: "O SIRGAS 2000 é o datum oficial do Brasil desde 2005, substituindo o SAD 69. O WGS 84 é o sistema global usado pelo GPS, mas não é o datum oficial do mapeamento brasileiro. A adoção do SIRGAS 2000 aproximou a cartografia nacional dos sistemas globais de navegação por satélite, reduzindo discrepâncias de posicionamento."
+        },
+        {
+            text: "Em uma carta topográfica, as curvas de nível unem pontos de igual altitude. Quando essas curvas aparecem muito próximas umas das outras, isso indica:",
+            options: [
+                "Terreno plano, com declividade suave e pouca variação de altitude.",
+                "Terreno íngreme, com declividade acentuada.",
+                "Presença de rios, lagos ou áreas alagadas."
+            ],
+            correct: 1,
+            justification: "Quanto mais próximas as curvas de nível, maior a variação de altitude em curta distância horizontal, ou seja, maior a declividade do terreno (área íngreme). Curvas afastadas indicam terreno plano ou suave. As curvas de nível não representam diretamente corpos d'água, embora a drenagem seja indicada por outras convenções cartográficas."
+        },
+        {
+            text: "Mapas que representam um ou poucos fenômenos específicos da realidade — como clima, densidade demográfica ou uso do solo — são classificados como:",
+            options: [
+                "Mapas gerais (de referência), que mostram o maior número possível de elementos.",
+                "Mapas temáticos, elaborados a partir de uma base cartográfica e voltados a um tema específico.",
+                "Cartas náuticas, utilizadas exclusivamente para a navegação marítima."
+            ],
+            correct: 1,
+            justification: "Mapas temáticos representam um ou poucos fenômenos específicos (clima, população, geologia, uso do solo etc.) sobre uma base cartográfica de referência. Os mapas gerais (A) buscam representar o máximo de elementos do território. As cartas náuticas (C) são um tipo específico de carta, voltada à navegação marítima."
+        },
+        {
+            text: "Sobre o uso do GNSS/GPS e do sensoriamento remoto na cartografia atual, é CORRETO afirmar que:",
+            options: [
+                "O GNSS/GPS determina posições a partir de sinais de satélites, e o sensoriamento remoto obtém dados da superfície sem contato físico direto com o objeto.",
+                "O GNSS/GPS depende de mapas impressos para funcionar, e o sensoriamento remoto exige contato físico direto com a área mapeada.",
+                "Ambas as técnicas foram abandonadas e substituídas pelos levantamentos topográficos tradicionais."
+            ],
+            correct: 0,
+            justification: "O GNSS (do qual o GPS é o sistema norte-americano) calcula a posição do receptor por meio de sinais de rádio emitidos por satélites. O sensoriamento remoto adquire informações da superfície sem contato físico, por meio de sensores a bordo de satélites, aeronaves ou drones. Essas tecnologias são hoje essenciais à cartografia e aos SIG, e não foram abandonadas."
+        },
+        {
+            text: "A generalização cartográfica é um conjunto de operações que consiste em:",
+            options: [
+                "Aumentar ao máximo o nível de detalhe do mapa, independentemente da escala e da finalidade.",
+                "Simplificar e selecionar as informações representadas, adequando-as à escala, à finalidade e ao público do mapa.",
+                "Eliminar toda a simbologia, mantendo apenas os nomes dos lugares."
+            ],
+            correct: 1,
+            justification: "A generalização cartográfica seleciona, simplifica, classifica, exagera ou desloca elementos para que o mapa seja legível e adequado à sua escala e finalidade. Um mapa em escala pequena (ex.: 1:1.000.000) não pode conter o mesmo nível de detalhe de uma planta em escala grande (ex.: 1:1.000). Generalizar não significa eliminar a simbologia (C), e sim torná-la compatível com o produto final."
+        }
+    ];
+
+    const total = questions.length;
+    const letters = ['A', 'B', 'C'];
+    let currentIndex = 0;
+    let userAnswers = new Array(total).fill(null);
+    let userJustification = new Array(total).fill(null);
+
+    const mainWrapper = document.getElementById('mainWrapper');
+    const capaScreen = document.getElementById('capaScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const blankScreen = document.getElementById('blankScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsArea = document.getElementById('optionsArea');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressText = document.getElementById('progressText');
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const restartQuizBtn = document.getElementById('restartQuizBtn');
+    const endQuizBtn = document.getElementById('endQuizBtn');
+    const resultContent = document.getElementById('resultContent');
+    const fontMinus = document.getElementById('fontMinus');
+    const fontPlus = document.getElementById('fontPlus');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    // ===== TAMANHO DA FONTE =====
+    // No documento modelo o máximo era 36 px. Aqui o máximo é 72 px (o DOBRO),
+    // conforme solicitado. O mínimo permanece em 12 px.
+    const FONT_MIN = 12;
+    const FONT_MAX = 72;
+    let currentFontSize = 16;
+
+    function applyFontSize() {
+        mainWrapper.style.fontSize = currentFontSize + 'px';
+        document.querySelectorAll('.question-text, .feedback, .opt-btn, .tool-btn, .action-btn, .start-btn')
+            .forEach(el => { el.style.fontSize = currentFontSize + 'px'; });
+    }
+
+    function setFontSize(size) {
+        currentFontSize = size;
+        applyFontSize();
+    }
+
+    fontMinus.addEventListener('click', () => setFontSize(Math.max(FONT_MIN, currentFontSize - 2)));
+    fontPlus.addEventListener('click', () => setFontSize(Math.min(FONT_MAX, currentFontSize + 2)));
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+
+    // ===== RENDERIZAÇÃO =====
+    function renderQuestion() {
+        const q = questions[currentIndex];
+
+        questionText.innerHTML = '<strong>Questão ' + (currentIndex + 1) + ':</strong> ' + q.text;
+
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = 'feedback';
+
+        // Monta as 3 alternativas
+        optionsArea.innerHTML = '';
+        q.options.forEach((optText, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.setAttribute('data-value', i);
+            btn.innerHTML = '<strong>' + letters[i] + ')</strong> ' + optText;
+            optionsArea.appendChild(btn);
+        });
+
+        // Restaura resposta já dada, se houver
+        const selected = userAnswers[currentIndex];
+        if (selected !== null) {
+            optionsArea.querySelectorAll('.opt-btn').forEach(btn => {
+                if (parseInt(btn.getAttribute('data-value'), 10) === selected) {
+                    btn.classList.add('selected');
+                }
+            });
+            if (userJustification[currentIndex]) {
+                const isCorrect = (selected === q.correct);
+                feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+                feedbackArea.style.display = 'block';
+                feedbackArea.innerHTML = userJustification[currentIndex];
+            }
+        }
+
+        progressText.innerText = 'Questão ' + (currentIndex + 1) + ' de ' + total;
+        prevBtn.disabled = (currentIndex === 0);
+        nextBtn.disabled = false;
+
+        applyFontSize(); // garante o tamanho da fonte nos botões recém-criados
+    }
+
+    function selectAnswer(value) {
+        const idx = parseInt(value, 10);
+        userAnswers[currentIndex] = idx;
+
+        const q = questions[currentIndex];
+        const isCorrect = (idx === q.correct);
+        const correctLetter = letters[q.correct];
+
+        const explanation =
+            '<strong>' + (isCorrect ? '✓ Correto!' : '✗ Incorreto') + '</strong><br>' +
+            '<strong>Justificativa:</strong> ' + q.justification + '<br>' +
+            '<span style="font-size:0.9rem; opacity:0.8;">Resposta correta: ' +
+            correctLetter + ') ' + q.options[q.correct] + '</span>';
+
+        userJustification[currentIndex] = explanation;
+
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+        feedbackArea.style.display = 'block';
+        feedbackArea.innerHTML = explanation;
+
+        optionsArea.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+        const selectedBtn = optionsArea.querySelector('.opt-btn[data-value="' + idx + '"]');
+        if (selectedBtn) selectedBtn.classList.add('selected');
+
+        applyFontSize();
+    }
+
+    optionsArea.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt-btn');
+        if (btn) selectAnswer(btn.getAttribute('data-value'));
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (userAnswers[currentIndex] === null) {
+            alert('Por favor, responda a questão antes de avançar.');
+            return;
+        }
+        if (currentIndex < total - 1) {
+            currentIndex++;
+            renderQuestion();
+        } else {
+            mostrarResultado();
+        }
+    });
+
+    // ===== RESULTADO =====
+    function mostrarResultado() {
+        let acertos = 0;
+        let erros = 0;
+        for (let i = 0; i < total; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === questions[i].correct) acertos++;
+            else if (userAnswers[i] !== null) erros++;
+        }
+        const percentual = (acertos / total) * 100;
+        const nota = (acertos / total) * 10;
+
+        let mensagem = "";
+        if (percentual >= 85) mensagem = "⭐ Excelente! Você domina escalas, projeções, coordenadas, datum, curvas de nível, tipos de mapas e generalização cartográfica. Parabéns!";
+        else if (percentual >= 70) mensagem = "👍 Muito bom! Revise os pontos que errou e tente novamente.";
+        else if (percentual >= 50) mensagem = "📘 Bom, mas dá para melhorar. Releia o material sobre projeções cartográficas, escalas, coordenadas geográficas, datum e sensoriamento remoto.";
+        else mensagem = "📚 Que tal revisar o conteúdo? Leia com calma e depois refaça o quiz.";
+
+        const resultadoHTML = `
+            <div class="stats">
+                <p><strong>✅ Acertos:</strong> ${acertos} (${percentual.toFixed(1)}%)</p>
+                <p><strong>❌ Erros:</strong> ${erros}</p>
+                <p><strong>🎓 Nota (0 a 10):</strong> ${nota.toFixed(1)}</p>
+                <p><strong>📊 Percentual de acerto:</strong> ${percentual.toFixed(1)}%</p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <p>${mensagem}</p>
+            </div>
+        `;
+        resultContent.innerHTML = resultadoHTML;
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    // ===== TELA EM BRANCO =====
+    function mostrarBlank() {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        blankScreen.classList.remove('active');
+        blankScreen.classList.add('active');
+        mainWrapper.classList.add('wrapper-blank');
+        blankScreen.innerHTML = '';
+    }
+
+    // ===== REFAZER =====
+    function refazerQuiz() {
+        userAnswers = new Array(total).fill(null);
+        userJustification = new Array(total).fill(null);
+        currentIndex = 0;
+        mainWrapper.classList.remove('wrapper-blank');
+        blankScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    }
+
+    startQuizBtn.addEventListener('click', () => {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    });
+
+    restartQuizBtn.addEventListener('click', refazerQuiz);
+    endQuizBtn.addEventListener('click', mostrarBlank);
+
+    setFontSize(16);
+</script>
+</body>
+</html>
