@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Quiz · Globalização e Consumismo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Verdana', 'Arial', sans-serif;
+            background: #eef2f7;
+            color: #2d3748;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            margin: 0;
+        }
+        .quiz-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(45, 55, 72, 0.08);
+            padding: 14px 18px;
+            border: 1px solid #cbd5e0;
+            min-height: 60vh;
+            transition: all 0.2s;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .blank-screen {
+            display: none;
+            width: 100%;
+            min-height: 60vh;
+            background: transparent;
+        }
+        .blank-screen.active { display: block; }
+        .wrapper-blank {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sub {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .opt-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 12px 18px;
+            font-size: 1.05rem;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #2d3748;
+            text-align: left;
+            line-height: 1.5;
+            font-family: inherit;
+            font-weight: 500;
+            width: 100%;
+        }
+        .opt-btn:hover {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .opt-btn.selected {
+            background: #2b6cb0;
+            color: #ffffff;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .feedback.correct { background: #f0fff4; border-left: 6px solid #38a169; }
+        .feedback.wrong { background: #fff5f5; border-left: 6px solid #e53e3e; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 16px 0 8px;
+        }
+        .tool-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 48px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            color: #2d3748;
+            font-weight: 600;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .tool-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .tool-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .progress {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #2b6cb0;
+            text-align: right;
+            font-weight: 600;
+        }
+        .font-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .font-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 0.9rem;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .font-btn:hover { background: #cbd5e0; }
+        .result-screen { text-align: center; }
+        .result-box {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .action-btn:hover { background: #2c5282; }
+        .action-btn.end-btn { background: #dd6b20; }
+        .action-btn.end-btn:hover { background: #c05621; }
+        .stats { font-size: 1.1rem; line-height: 1.8; }
+
+        .capa {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .capa h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #2b6cb0;
+        }
+        .capa h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #dd6b20;
+        }
+        .capa .subtitulo {
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        .capa .autora {
+            font-size: 17px;
+            color: #718096;
+            margin-top: 24px;
+            font-style: italic;
+        }
+        .capa .info-quiz {
+            font-size: 15px;
+            color: #718096;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .start-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 22px;
+            font-weight: bold;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .start-btn:hover { background: #2c5282; }
+
+        @media (max-width: 640px) {
+            .quiz-wrapper { padding: 10px 12px; border-radius: 18px; }
+            .opt-btn { padding: 10px 14px; font-size: 1rem; }
+            .capa h1 { font-size: 19px; }
+            .capa h2 { font-size: 14px; }
+            .title { font-size: 1.15rem; }
+            .question-text { font-size: 0.96rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-wrapper" id="mainWrapper">
+    <!-- TELA DE CAPA -->
+    <div id="capaScreen" class="screen active">
+        <div class="capa">
+            <h1>🌐 Quiz de Revisão</h1>
+            <h2>Globalização e Consumismo</h2>
+            <p class="subtitulo">Conceito e Fases da Globalização · Divisão Internacional do Trabalho<br>
+            Avanços Técnico-Científicos e Redes · Multinacionais e Neoliberalismo<br>
+            Consumo, Consumismo e Sociedade de Consumo · Obsolescência Programada e Percebida<br>
+            Publicidade, Crédito e Endividamento · Impactos Socioambientais · Consumo Consciente</p>
+            <p class="autora">Material de Estudos · Geografia / Sociologia</p>
+            <p class="info-quiz">10 questões objetivas, com 3 alternativas cada</p>
+            <button class="start-btn" id="startQuizBtn">▶ Iniciar Quiz</button>
+        </div>
+    </div>
+
+    <!-- TELA DO QUIZ -->
+    <div id="quizScreen" class="screen">
+        <div class="font-controls">
+            <button class="font-btn" id="fontMinus">A−</button>
+            <button class="font-btn" id="fontPlus">A+</button>
+            <button class="font-btn" id="fullscreenBtn">⛶ Tela cheia</button>
+        </div>
+        <div class="title">🌐 Globalização e Consumismo</div>
+        <div class="sub">10 questões objetivas com 3 alternativas</div>
+        <div class="progress" id="progressText">Questão 1 de 10</div>
+        <div id="questionArea">
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsArea"></div>
+            <div class="feedback" id="feedbackArea" style="display: none;"></div>
+        </div>
+        <div class="toolbar">
+            <button class="tool-btn" id="prevBtn" disabled>◀ Anterior</button>
+            <button class="tool-btn" id="nextBtn" disabled>Próxima ▶</button>
+        </div>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div id="resultScreen" class="screen result-screen">
+        <h2>🎉 Parabéns! Você concluiu o teste.</h2>
+        <div class="result-box" id="resultContent"></div>
+        <button class="action-btn" id="restartQuizBtn">🔄 Refazer quiz</button>
+        <button class="action-btn end-btn" id="endQuizBtn">🏁 Encerrar (página em branco)</button>
+    </div>
+
+    <!-- TELA EM BRANCO -->
+    <div class="blank-screen" id="blankScreen"></div>
+</div>
+
+<script>
+    const questions = [
+        {
+            text: "A globalização é um processo multidimensional de integração econômica, política, cultural e social entre os países. Sobre seu conceito e características, é CORRETO afirmar:",
+            options: [
+                "Trata-se de um fenômeno restrito ao século XXI, sem qualquer antecedente histórico nas Grandes Navegações ou na Revolução Industrial.",
+                "Intensificou-se a partir do final do século XX, com a revolução técnico-científico-informacional, a expansão das multinacionais, a liberalização dos mercados e a compressão do espaço-tempo pelas redes de transporte e comunicação.",
+                "É um processo exclusivamente cultural, sem relação com a economia, o comércio internacional ou os fluxos financeiros."
+            ],
+            correct: 1,
+            justification: "A globalização se intensificou a partir do final do século XX (especialmente após a década de 1990), impulsionada pela revolução técnico-científico-informacional (informática, telecomunicações, internet), pela expansão das empresas multinacionais, pela liberalização dos mercados e pelo avanço dos transportes — o que resultou na chamada 'compressão do espaço-tempo'. Embora tenha antecedentes (Grandes Navegações, Revolução Industrial), é um processo multidimensional, que envolve economia, política, cultura e sociedade (não apenas cultural, como sugere a alternativa C)."
+        },
+        {
+            text: "Costuma-se dividir a globalização em fases históricas. Sobre a chamada 'Terceira Fase' (ou globalização recente/contemporânea), é CORRETO afirmar:",
+            options: [
+                "Caracteriza-se pela expansão marítimo-comercial europeia dos séculos XV e XVI, com a colonização da América.",
+                "Tem início após a Segunda Guerra Mundial e se intensifica a partir dos anos 1970–1990, marcada pelo papel das multinacionais, dos fluxos financeiros globais e das tecnologias de informação.",
+                "Refere-se à Primeira Revolução Industrial (século XVIII), marcada pela máquina a vapor e pelas ferrovias."
+            ],
+            correct: 1,
+            justification: "A globalização costuma ser dividida em três fases principais: (1) Primeira fase — Grandes Navegações e expansão marítimo-comercial (séculos XV–XVI); (2) Segunda fase — Revolução Industrial (séculos XVIII–XIX), com a máquina a vapor, ferrovias e o imperialismo; (3) Terceira fase — globalização contemporânea, iniciada após a Segunda Guerra Mundial e intensificada entre os anos 1970 e 1990, marcada por multinacionais, fluxos financeiros globais, blocos econômicos e tecnologias de informação (internet, satélites, cabos submarinos)."
+        },
+        {
+            text: "A Nova Divisão Internacional do Trabalho (NDIT) caracteriza-se por:",
+            options: [
+                "Manter a clássica divisão colonial, em que as colônias forneciam apenas matérias-primas e as metrópoles produziam manufaturados, sem qualquer alteração desde o século XIX.",
+                "Redistribuir as etapas produtivas pelo mundo: países centrais concentram pesquisa, tecnologia e finanças; países periféricos e emergentes recebem indústrias, serviços e etapas de montagem, em função de mão de obra e custos mais baixos.",
+                "Eliminar completamente as desigualdades entre países, tornando todas as nações igualmente industrializadas e desenvolvidas."
+            ],
+            correct: 1,
+            justification: "A Nova Divisão Internacional do Trabalho (NDIT) fragmenta a produção em escala global: pesquisa, design, tecnologia e finanças permanecem nos países centrais (EUA, Japão, Alemanha etc.), enquanto etapas industriais, montagem, serviços e produção de commodities se deslocam para países periféricos e emergentes (China, México, Brasil, Índia, Vietnã), atraídos por mão de obra mais barata, incentivos fiscais e custos menores. Isso NÃO elimina as desigualdades (alternativa C), apenas as reorganiza."
+        },
+        {
+            text: "As empresas multinacionais (ou transnacionais) são agentes centrais da globalização. Sobre elas, é CORRETO afirmar:",
+            options: [
+                "Atuam em um único país, sendo controladas exclusivamente por governos nacionais.",
+                "Possuem matriz em um país de origem e filiais em diversos outros, distribuindo suas etapas produtivas globalmente em busca de mercados, mão de obra barata, matérias-primas e incentivos fiscais.",
+                "São empresas exclusivamente estatais, criadas por tratados internacionais e sem fins lucrativos."
+            ],
+            correct: 1,
+            justification: "As multinacionais (ou transnacionais) têm sua matriz (sede) em um país de origem e instalam filiais, fábricas ou subsidiárias em vários outros países, buscando: ampliação de mercados consumidores, mão de obra mais barata, acesso a matérias-primas, incentivos fiscais e legislações ambientais e trabalhistas mais flexíveis. São, em regra, empresas PRIVADAS com fins lucrativos — não estatais nem sem fins lucrativos (alternativa C)."
+        },
+        {
+            text: "O neoliberalismo é a doutrina econômica que se consolidou junto com a globalização a partir dos anos 1980. Suas principais bandeiras são:",
+            options: [
+                "Ampliação do Estado na economia, com estatização de empresas, aumento de impostos e forte regulação do mercado.",
+                "Redução da intervenção do Estado na economia, com privatizações, abertura comercial, desregulamentação, flexibilização das leis trabalhistas e livre circulação de capitais.",
+                "Fechamento das fronteiras comerciais, proibição de investimentos estrangeiros e controle total do câmbio."
+            ],
+            correct: 1,
+            justification: "O neoliberalismo defende a MÍNIMA intervenção do Estado na economia. Suas principais bandeiras são: privatização de empresas estatais, abertura comercial (redução de tarifas), desregulamentação dos mercados, flexibilização das leis trabalhistas, redução de gastos públicos e livre circulação de capitais. Ganhou força nos governos de Margaret Thatcher (Reino Unido) e Ronald Reagan (EUA), nos anos 1980, e se difundiu pelo mundo por meio do Consenso de Washington (1989)."
+        },
+        {
+            text: "Sobre a distinção entre CONSUMO e CONSUMISMO, é CORRETO afirmar:",
+            options: [
+                "São sinônimos perfeitos: ambos se referem à satisfação de necessidades básicas de sobrevivência.",
+                "Consumo é o ato de utilizar bens e serviços para satisfazer necessidades; consumismo é o comportamento excessivo e compulsivo de adquirir bens que ultrapassam as necessidades reais, muitas vezes como forma de status ou identidade.",
+                "Consumismo é um termo técnico da economia para medir o PIB; consumo é um termo exclusivamente psicológico, sem relação com a economia."
+            ],
+            correct: 1,
+            justification: "CONSUMO é o ato natural e necessário de utilizar bens e serviços para satisfazer necessidades humanas (alimentação, moradia, vestuário etc.). CONSUMISMO é um comportamento social e cultural caracterizado pela aquisição excessiva, compulsiva e muitas vezes supérflua de bens, que ultrapassam as necessidades reais. O consumismo está associado à busca de status, identidade e pertencimento social, sendo estimulado pela publicidade, pelo crédito fácil e pela obsolescência dos produtos."
+        },
+        {
+            text: "A chamada 'sociedade de consumo' consolidou-se no século XX, especialmente após a Segunda Guerra Mundial. Um de seus principais motores foi:",
+            options: [
+                "A proibição da publicidade e a restrição ao crédito ao consumidor.",
+                "A produção em massa (fordismo/taylorismo) aliada à publicidade, ao marketing, ao crédito facilitado e à expansão do comércio e dos shopping centers.",
+                "A redução drástica da oferta de produtos industrializados, que passaram a ser artesanais e personalizados."
+            ],
+            correct: 1,
+            justification: "A sociedade de consumo consolidou-se a partir do fordismo (produção em massa em linhas de montagem) e do taylorismo (organização científica do trabalho), que baratearam os produtos. A isso somaram-se: publicidade e marketing agressivos (rádio, TV, internet), crédito fácil (parcelamento, cartões), expansão do comércio (shopping centers, supermercados) e estímulo constante ao consumo. Foi um processo de estímulo — e não de restrição — ao consumo (alternativa A) e de ampliação da oferta industrial (alternativa C)."
+        },
+        {
+            text: "A obsolescência programada e a obsolescência percebida são estratégias típicas da sociedade de consumo. Sobre elas, é CORRETO afirmar:",
+            options: [
+                "A obsolescência programada é o desgaste planejado do produto, para que ele dure menos e precise ser substituído; a obsolescência percebida é a criação, pelo marketing, da sensação de que o produto ficou ultrapassado, mesmo funcionando bem.",
+                "Ambas se referem à reciclagem de produtos antigos e à sua transformação em novos bens, sem descarte.",
+                "A obsolescência programada é uma lei ambiental que obriga as empresas a produzirem produtos duráveis e de longa vida útil."
+            ],
+            correct: 0,
+            justification: "A OBSOLESCÊNCIA PROGRAMADA é o desgaste ou a durabilidade reduzida planejada pelo fabricante — o produto é projetado para durar pouco, obrigando à substituição (ex.: lâmpadas com vida útil limitada, baterias não substituíveis, componentes que se tornam irreparáveis). A OBSOLESCÊNCIA PERCEBIDA é criada pelo marketing e pela publicidade: o produto ainda funciona, mas o consumidor é levado a acreditar que está ultrapassado, desatualizado ou fora de moda (ex.: lançamentos anuais de celulares com pequenas mudanças)."
+        },
+        {
+            text: "Entre os principais impactos socioambientais do consumismo, é CORRETO citar:",
+            options: [
+                "Redução da extração de recursos naturais e diminuição da geração de resíduos sólidos, pela eficiência da indústria moderna.",
+                "Aumento exponencial da extração de recursos naturais, da geração de resíduos sólidos e da poluição; intensificação do efeito estufa; e ampliação das desigualdades sociais, com exploração de mão de obra barata em países periféricos.",
+                "Melhora automática da qualidade de vida de todas as populações, sem qualquer efeito negativo sobre o meio ambiente."
+            ],
+            correct: 1,
+            justification: "O consumismo amplia a pressão sobre os recursos naturais (minérios, água, madeira, combustíveis fósseis), gera volumes crescentes de resíduos sólidos e poluição (ar, água, solo), intensifica as emissões de gases de efeito estufa e amplia desigualdades sociais, sobretudo quando multinacionais exploram mão de obra barata e legislações ambientais frágeis em países periféricos. Alternativas A e C negam, incorretamente, esses impactos amplamente documentados."
+        },
+        {
+            text: "Diante dos impactos do consumismo, ganhou força o conceito de CONSUMO CONSCIENTE (ou consumo sustentável). Esse conceito propõe:",
+            options: [
+                "A eliminação total do consumo, com a adoção de um estilo de vida de privação absoluta e isolamento social.",
+                "A adoção de escolhas mais responsáveis: consumir apenas o necessário, valorizar produtos duráveis e de origem ética, reciclar, reutilizar, reduzir desperdícios e cobrar das empresas práticas socioambientais responsáveis.",
+                "O aumento ilimitado do consumo como forma de estimular a economia, sem qualquer preocupação ambiental ou social."
+            ],
+            correct: 1,
+            justification: "O consumo consciente (ou sustentável) não propõe a eliminação do consumo — o que seria inviável e socialmente excludente —, mas a adoção de escolhas mais responsáveis: comprar apenas o necessário, preferir produtos duráveis, reparáveis e de origem ética, reciclar, reutilizar, reduzir desperdícios, apoiar o comércio justo e cobrar das empresas responsabilidade socioambiental. É uma postura crítica diante do consumismo e um dos pilares do desenvolvimento sustentável (aliado aos 3 Rs: Reduzir, Reutilizar, Reciclar)."
+        }
+    ];
+
+    const total = questions.length;
+    const letters = ['A', 'B', 'C'];
+    let currentIndex = 0;
+    let userAnswers = new Array(total).fill(null);
+    let userJustification = new Array(total).fill(null);
+
+    const mainWrapper = document.getElementById('mainWrapper');
+    const capaScreen = document.getElementById('capaScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const blankScreen = document.getElementById('blankScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsArea = document.getElementById('optionsArea');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressText = document.getElementById('progressText');
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const restartQuizBtn = document.getElementById('restartQuizBtn');
+    const endQuizBtn = document.getElementById('endQuizBtn');
+    const resultContent = document.getElementById('resultContent');
+    const fontMinus = document.getElementById('fontMinus');
+    const fontPlus = document.getElementById('fontPlus');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    // ===== TAMANHO DA FONTE =====
+    // Mínimo 12 px, máximo 72 px (o dobro do modelo original, que limitava a 36 px).
+    const FONT_MIN = 12;
+    const FONT_MAX = 72;
+    let currentFontSize = 16;
+
+    function applyFontSize() {
+        mainWrapper.style.fontSize = currentFontSize + 'px';
+        document.querySelectorAll('.question-text, .feedback, .opt-btn, .tool-btn, .action-btn, .start-btn')
+            .forEach(el => { el.style.fontSize = currentFontSize + 'px'; });
+    }
+
+    function setFontSize(size) {
+        currentFontSize = size;
+        applyFontSize();
+    }
+
+    fontMinus.addEventListener('click', () => setFontSize(Math.max(FONT_MIN, currentFontSize - 2)));
+    fontPlus.addEventListener('click', () => setFontSize(Math.min(FONT_MAX, currentFontSize + 2)));
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+
+    // ===== RENDERIZAÇÃO =====
+    function renderQuestion() {
+        const q = questions[currentIndex];
+
+        questionText.innerHTML = '<strong>Questão ' + (currentIndex + 1) + ':</strong> ' + q.text;
+
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = 'feedback';
+
+        // Monta as 3 alternativas
+        optionsArea.innerHTML = '';
+        q.options.forEach((optText, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.setAttribute('data-value', i);
+            btn.innerHTML = '<strong>' + letters[i] + ')</strong> ' + optText;
+            optionsArea.appendChild(btn);
+        });
+
+        // Restaura resposta já dada, se houver
+        const selected = userAnswers[currentIndex];
+        if (selected !== null) {
+            optionsArea.querySelectorAll('.opt-btn').forEach(btn => {
+                if (parseInt(btn.getAttribute('data-value'), 10) === selected) {
+                    btn.classList.add('selected');
+                }
+            });
+            if (userJustification[currentIndex]) {
+                const isCorrect = (selected === q.correct);
+                feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+                feedbackArea.style.display = 'block';
+                feedbackArea.innerHTML = userJustification[currentIndex];
+            }
+        }
+
+        progressText.innerText = 'Questão ' + (currentIndex + 1) + ' de ' + total;
+        prevBtn.disabled = (currentIndex === 0);
+        nextBtn.disabled = false;
+
+        applyFontSize();
+    }
+
+    function selectAnswer(value) {
+        const idx = parseInt(value, 10);
+        userAnswers[currentIndex] = idx;
+
+        const q = questions[currentIndex];
+        const isCorrect = (idx === q.correct);
+        const correctLetter = letters[q.correct];
+
+        const explanation =
+            '<strong>' + (isCorrect ? '✓ Correto!' : '✗ Incorreto') + '</strong><br>' +
+            '<strong>Justificativa:</strong> ' + q.justification + '<br>' +
+            '<span style="font-size:0.9rem; opacity:0.8;">Resposta correta: ' +
+            correctLetter + ') ' + q.options[q.correct] + '</span>';
+
+        userJustification[currentIndex] = explanation;
+
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+        feedbackArea.style.display = 'block';
+        feedbackArea.innerHTML = explanation;
+
+        optionsArea.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+        const selectedBtn = optionsArea.querySelector('.opt-btn[data-value="' + idx + '"]');
+        if (selectedBtn) selectedBtn.classList.add('selected');
+
+        applyFontSize();
+    }
+
+    optionsArea.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt-btn');
+        if (btn) selectAnswer(btn.getAttribute('data-value'));
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (userAnswers[currentIndex] === null) {
+            alert('Por favor, responda a questão antes de avançar.');
+            return;
+        }
+        if (currentIndex < total - 1) {
+            currentIndex++;
+            renderQuestion();
+        } else {
+            mostrarResultado();
+        }
+    });
+
+    // ===== RESULTADO =====
+    function mostrarResultado() {
+        let acertos = 0;
+        let erros = 0;
+        for (let i = 0; i < total; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === questions[i].correct) acertos++;
+            else if (userAnswers[i] !== null) erros++;
+        }
+        const percentual = (acertos / total) * 100;
+        const nota = (acertos / total) * 10;
+
+        let mensagem = "";
+        if (percentual >= 85) mensagem = "⭐ Excelente! Você domina o conceito e as fases da globalização, a NDIT, o neoliberalismo, a sociedade de consumo, a obsolescência programada e o consumo consciente. Parabéns!";
+        else if (percentual >= 70) mensagem = "👍 Muito bom! Revise os pontos que errou e tente novamente.";
+        else if (percentual >= 50) mensagem = "📘 Bom, mas dá para melhorar. Releia o material sobre globalização, multinacionais, sociedade de consumo, obsolescência e consumo consciente.";
+        else mensagem = "📚 Que tal revisar o conteúdo? Leia com calma e depois refaça o quiz.";
+
+        const resultadoHTML = `
+            <div class="stats">
+                <p><strong>✅ Acertos:</strong> ${acertos} (${percentual.toFixed(1)}%)</p>
+                <p><strong>❌ Erros:</strong> ${erros}</p>
+                <p><strong>🎓 Nota (0 a 10):</strong> ${nota.toFixed(1)}</p>
+                <p><strong>📊 Percentual de acerto:</strong> ${percentual.toFixed(1)}%</p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <p>${mensagem}</p>
+            </div>
+        `;
+        resultContent.innerHTML = resultadoHTML;
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    // ===== TELA EM BRANCO =====
+    function mostrarBlank() {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        blankScreen.classList.remove('active');
+        blankScreen.classList.add('active');
+        mainWrapper.classList.add('wrapper-blank');
+        blankScreen.innerHTML = '';
+    }
+
+    // ===== REFAZER =====
+    function refazerQuiz() {
+        userAnswers = new Array(total).fill(null);
+        userJustification = new Array(total).fill(null);
+        currentIndex = 0;
+        mainWrapper.classList.remove('wrapper-blank');
+        blankScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    }
+
+    startQuizBtn.addEventListener('click', () => {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    });
+
+    restartQuizBtn.addEventListener('click', refazerQuiz);
+    endQuizBtn.addEventListener('click', mostrarBlank);
+
+    setFontSize(16);
+</script>
+</body>
+</html>
