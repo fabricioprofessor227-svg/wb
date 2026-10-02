@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Quiz · Processos de Formação do Relevo e Tipos de Relevo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Verdana', 'Arial', sans-serif;
+            background: #eef2f7;
+            color: #2d3748;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            margin: 0;
+        }
+        .quiz-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(45, 55, 72, 0.08);
+            padding: 14px 18px;
+            border: 1px solid #cbd5e0;
+            min-height: 60vh;
+            transition: all 0.2s;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .blank-screen {
+            display: none;
+            width: 100%;
+            min-height: 60vh;
+            background: transparent;
+        }
+        .blank-screen.active { display: block; }
+        .wrapper-blank {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sub {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .opt-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 12px 18px;
+            font-size: 1.05rem;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #2d3748;
+            text-align: left;
+            line-height: 1.5;
+            font-family: inherit;
+            font-weight: 500;
+            width: 100%;
+        }
+        .opt-btn:hover {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .opt-btn.selected {
+            background: #2b6cb0;
+            color: #ffffff;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .feedback.correct { background: #f0fff4; border-left: 6px solid #38a169; }
+        .feedback.wrong { background: #fff5f5; border-left: 6px solid #e53e3e; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 16px 0 8px;
+        }
+        .tool-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 48px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            color: #2d3748;
+            font-weight: 600;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .tool-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .tool-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .progress {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #2b6cb0;
+            text-align: right;
+            font-weight: 600;
+        }
+        .font-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .font-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 0.9rem;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .font-btn:hover { background: #cbd5e0; }
+        .result-screen { text-align: center; }
+        .result-box {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .action-btn:hover { background: #2c5282; }
+        .action-btn.end-btn { background: #dd6b20; }
+        .action-btn.end-btn:hover { background: #c05621; }
+        .stats { font-size: 1.1rem; line-height: 1.8; }
+
+        .capa {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .capa h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #2b6cb0;
+        }
+        .capa h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #dd6b20;
+        }
+        .capa .subtitulo {
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        .capa .autora {
+            font-size: 17px;
+            color: #718096;
+            margin-top: 24px;
+            font-style: italic;
+        }
+        .capa .info-quiz {
+            font-size: 15px;
+            color: #718096;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .start-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 22px;
+            font-weight: bold;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+        .start-btn:hover { background: #2c5282; }
+
+        @media (max-width: 640px) {
+            .quiz-wrapper { padding: 10px 12px; border-radius: 18px; }
+            .opt-btn { padding: 10px 14px; font-size: 1rem; }
+            .capa h1 { font-size: 19px; }
+            .capa h2 { font-size: 14px; }
+            .title { font-size: 1.15rem; }
+            .question-text { font-size: 0.96rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-wrapper" id="mainWrapper">
+    <!-- TELA DE CAPA -->
+    <div id="capaScreen" class="screen active">
+        <div class="capa">
+            <h1>⛰️ Quiz de Revisão</h1>
+            <h2>Processos de Formação do Relevo · Tipos de Relevo</h2>
+            <p class="subtitulo">Agentes Endógenos e Exógenos · Tectonismo e Vulcanismo · Abalos Sísmicos<br>
+            Intemperismo e Erosão · Erosão Fluvial, Pluvial, Eólica e Glacial · Sedimentação<br>
+            Estruturas Geológicas (Dobras, Falhas, Escudos, Bacias) · Tipos de Relevo Brasileiro</p>
+            <p class="autora">Material de Estudos · Geografia / Geomorfologia</p>
+            <p class="info-quiz">10 questões objetivas, com 3 alternativas cada</p>
+            <button class="start-btn" id="startQuizBtn">▶ Iniciar Quiz</button>
+        </div>
+    </div>
+
+    <!-- TELA DO QUIZ -->
+    <div id="quizScreen" class="screen">
+        <div class="font-controls">
+            <button class="font-btn" id="fontMinus">A−</button>
+            <button class="font-btn" id="fontPlus">A+</button>
+            <button class="font-btn" id="fullscreenBtn">⛶ Tela cheia</button>
+        </div>
+        <div class="title">⛰️ Relevo: Processos e Tipos</div>
+        <div class="sub">10 questões objetivas com 3 alternativas</div>
+        <div class="progress" id="progressText">Questão 1 de 10</div>
+        <div id="questionArea">
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsArea"></div>
+            <div class="feedback" id="feedbackArea" style="display: none;"></div>
+        </div>
+        <div class="toolbar">
+            <button class="tool-btn" id="prevBtn" disabled>◀ Anterior</button>
+            <button class="tool-btn" id="nextBtn" disabled>Próxima ▶</button>
+        </div>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div id="resultScreen" class="screen result-screen">
+        <h2>🎉 Parabéns! Você concluiu o teste.</h2>
+        <div class="result-box" id="resultContent"></div>
+        <button class="action-btn" id="restartQuizBtn">🔄 Refazer quiz</button>
+        <button class="action-btn end-btn" id="endQuizBtn">🏁 Encerrar (página em branco)</button>
+    </div>
+
+    <!-- TELA EM BRANCO -->
+    <div class="blank-screen" id="blankScreen"></div>
+</div>
+
+<script>
+    const questions = [
+        {
+            text: "Os agentes que atuam na formação e transformação do relevo terrestre são classificados em endógenos (internos) e exógenos (externos). Sobre eles, é CORRETO afirmar:",
+            options: [
+                "Os agentes endógenos atuam na superfície, esculpindo o relevo por meio do vento e da chuva; os exógenos atuam no interior, movimentando placas tectônicas.",
+                "Os agentes endógenos atuam no interior da Terra, criando grandes formas de relevo (montanhas, planaltos); os exógenos atuam na superfície, modelando e esculpindo essas formas.",
+                "Ambos os agentes atuam exclusivamente na superfície terrestre, sendo a diferença apenas a escala temporal em que atuam."
+            ],
+            correct: 1,
+            justification: "Os agentes ENDÓGENOS (internos) atuam no interior da Terra — são o tectonismo, o vulcanismo e os abalos sísmicos — e são responsáveis pela CRIAÇÃO de grandes formas de relevo (cordilheiras, montanhas, planaltos, bacias). Os agentes EXÓGENOS (externos) atuam na superfície — intemperismo, chuvas, rios, ventos, geleiras, marés — e são responsáveis pela MODELAGEM e ESCULTURA dessas formas, através da erosão, transporte e sedimentação."
+        },
+        {
+            text: "O tectonismo é um dos principais agentes endógenos de formação do relevo. Sobre ele, assinale a alternativa CORRETA:",
+            options: [
+                "Refere-se apenas à atividade vulcânica, com a erupção de magma na superfície.",
+                "Compreende os movimentos da crosta terrestre decorrentes da dinâmica das placas tectônicas, podendo ser epirogênicos (verticais) ou orogênicos (horizontais).",
+                "É um fenômeno atmosférico que provoca a erosão das rochas pela ação do vento e da chuva."
+            ],
+            correct: 1,
+            justification: "O tectonismo (ou diastrofismo) compreende os movimentos da crosta terrestre decorrentes da dinâmica das placas tectônicas. Divide-se em: movimentos EPIROGÊNICOS — lentos, verticais, que provocam soerguimento ou rebaixamento de blocos, formando escudos e bacias sedimentares; e movimentos OROGÊNICOS — mais rápidos, horizontais, que dobram e enrugam as camadas rochosas, originando cordilheiras e montanhas (ex.: Andes, Himalaia). Não se confunde com vulcanismo (A) nem com erosão (C)."
+        },
+        {
+            text: "Sobre o vulcanismo e os abalos sísmicos como agentes formadores do relevo, é CORRETO afirmar:",
+            options: [
+                "São agentes exógenos que atuam apenas na superfície, esculpindo vales e planícies.",
+                "O vulcanismo pode originar ilhas oceânicas, planaltos vulcânicos e derrames basálticos; os abalos sísmicos (terremotos) estão associados às zonas de contato entre placas tectônicas.",
+                "O vulcanismo e os abalos sísmicos ocorrem exclusivamente no centro dos continentes, longe dos limites das placas tectônicas."
+            ],
+            correct: 1,
+            justification: "O vulcanismo e os abalos sísmicos são agentes ENDÓGENOS. O vulcanismo pode criar novas formas de relevo, como ilhas oceânicas (ex.: Havaí, Islândia), planaltos vulcânicos e extensos derrames basálticos (ex.: Planalto Meridional Brasileiro, com a terra roxa). Os abalos sísmicos (terremotos) estão concentrados nas zonas de contato entre placas tectônicas — especialmente no Círculo de Fogo do Pacífico —, e podem alterar o relevo por meio de falhamentos e deslizamentos."
+        },
+        {
+            text: "O intemperismo é uma etapa fundamental na formação do relevo. Sobre ele, assinale a alternativa CORRETA:",
+            options: [
+                "É o processo de desgaste, desagregação e decomposição das rochas na superfície, podendo ser físico (mecânico), químico ou biológico.",
+                "É o transporte de sedimentos de uma região para outra pela ação de rios e ventos.",
+                "É a deposição de sedimentos em áreas mais baixas, formando planícies e deltas."
+            ],
+            correct: 0,
+            justification: "O intemperismo é o conjunto de processos que provocam a desagregação (física/mecânica) e a decomposição (química) das rochas na superfície terrestre. Pode ser: FÍSICO — variações de temperatura, ação do gelo (gelivação); QUÍMICO — dissolução, hidrólise, oxidação; e BIOLÓGICO — ação de raízes, microrganismos. A alternativa B descreve a EROSÃO (transporte), e a C descreve a SEDIMENTAÇÃO (deposição)."
+        },
+        {
+            text: "A erosão é o processo de desgaste, transporte e deposição de materiais rochosos pela ação de agentes externos. Sobre os tipos de erosão, é CORRETO afirmar:",
+            options: [
+                "A erosão eólica é provocada pela ação dos rios, formando vales profundos em forma de V.",
+                "A erosão glacial é provocada pelo movimento das geleiras, que esculpem vales em forma de U e deixam morenas; a erosão eólica, pela ação dos ventos, formando dunas e arcos naturais.",
+                "A erosão pluvial não existe, pois a chuva não é capaz de desgastar rochas."
+            ],
+            correct: 1,
+            justification: "A EROSÃO GLACIAL é provocada pelo lento movimento das geleiras, esculpindo vales em forma de U (vales glaciais), arredondando topos de montanhas e depositando morenas. A EROSÃO EÓLICA é provocada pelos ventos, formando dunas, arcos naturais e rochas esculpidas (ex.: desertos). A EROSÃO FLUVIAL é a ação dos rios (vales em V); a PLUVIAL, a ação direta das chuvas (sulcos e ravinas); a MARINHA, a ação das ondas e marés (falésias)."
+        },
+        {
+            text: "Os principais tipos de relevo são classificados, geralmente, em: planaltos, planícies, depressões e montanhas. Sobre eles, é CORRETO afirmar:",
+            options: [
+                "Planaltos são áreas relativamente planas, mais elevadas que o entorno, onde predomina o processo de EROSÃO; planícies são áreas planas de baixa altitude, onde predomina a SEDIMENTAÇÃO.",
+                "Planícies são áreas elevadas com topo plano, onde predomina a erosão; planaltos são áreas baixas onde predomina a deposição de sedimentos.",
+                "Depressões são áreas muito elevadas, com picos agudos, formadas exclusivamente por dobramentos modernos."
+            ],
+            correct: 0,
+            justification: "PLANALTOS são áreas relativamente planas, mais elevadas que as áreas vizinhas, onde predomina o processo de EROSÃO (desgaste). PLANÍCIES são áreas planas de baixa altitude, onde predomina a SEDIMENTAÇÃO (deposição). DEPRESSÕES são áreas mais baixas que o entorno (absolutas ou relativas). MONTANHAS são grandes elevações naturais, com picos e encostas íngremes, geralmente formadas por dobramentos modernos (orogênese)."
+        },
+        {
+            text: "As montanhas são grandes elevações naturais do relevo. Sobre sua formação, é CORRETO afirmar:",
+            options: [
+                "Formam-se exclusivamente pela ação de vulcões, nunca por dobramentos tectônicos.",
+                "Podem originar-se de dobramentos modernos (orogênese), como os Andes e o Himalaia, ou de processos vulcânicos e de falhamentos, como as montanhas de blocos falhados.",
+                "São formas de relevo exclusivas de regiões de planície, formadas pela deposição de sedimentos fluviais."
+            ],
+            correct: 1,
+            justification: "As montanhas podem ter origens diversas: (1) DOBRAMENTOS MODERNOS (orogênese) — colisão de placas tectônicas, gerando grandes cadeias como Andes, Himalaia e Alpes; (2) VULCANISMO — montanhas vulcânicas como o Etna e o Fuji; (3) FALHAMENTOS — blocos soerguidos ao longo de falhas (montanhas de blocos falhados); (4) EROSÃO DIFERENCIAL — relevos residuais em rochas mais resistentes. Não são exclusivas de planícies (alternativa C)."
+        },
+        {
+            text: "As estruturas geológicas (dobras, falhas, escudos e bacias sedimentares) influenciam diretamente as formas de relevo. Sobre elas, é CORRETO afirmar:",
+            options: [
+                "Dobras são rupturas na crosta, com deslocamento de blocos; falhas são encurvamentos das camadas rochosas, sem ruptura.",
+                "Dobras são encurvamentos das camadas rochosas, geralmente formadas por pressões tectônicas lentas; falhas são rupturas com deslocamento de blocos, comuns em áreas de tensão.",
+                "Escudos cristalinos são áreas de rochas sedimentares recentes, enquanto as bacias sedimentares são formadas por rochas magmáticas antigas."
+            ],
+            correct: 1,
+            justification: "DOBRAS são encurvamentos (flexões) das camadas rochosas, geralmente formadas por pressões tectônicas lentas e prolongadas, típicas de orogênese (ex.: Andes, Himalaia). FALHAS são rupturas com deslocamento de blocos rochosos, comuns em áreas de tensão (ex.: Vale do Rift, na África; falhas geológicas no Sudeste brasileiro). ESCUDOS CRISTALINOS são áreas de rochas magmáticas e metamórficas muito antigas (pré-cambrianas), enquanto as BACIAS SEDIMENTARES são áreas de rochas sedimentares, geralmente mais recentes (paleozoicas a cenozoicas)."
+        },
+        {
+            text: "O relevo brasileiro é marcado pela ausência de dobramentos modernos recentes, sendo constituído principalmente por:",
+            options: [
+                "Escudos cristalinos (planaltos antigos) e bacias sedimentares (planícies e planaltos sedimentares), com predomínio de altitudes modestas (raramente acima de 3.000 m).",
+                "Cordilheiras modernas, semelhantes aos Andes, com picos acima de 6.000 m.",
+                "Apenas planícies costeiras, sem nenhum tipo de planalto ou depressão no interior."
+            ],
+            correct: 0,
+            justification: "O relevo brasileiro é formado por ESCUDOS CRISTALINOS (rochas magmáticas e metamórficas antigas — pré-cambrianas) e BACIAS SEDIMENTARES (rochas sedimentares paleozoicas a cenozoicas). Como o país está no centro da Placa Sul-Americana, NÃO possui dobramentos modernos nem cordilheiras recentes. As altitudes são modestas: o ponto mais alto é o Pico da Neblina (≈ 2.995 m). Predominam planaltos, depressões e planícies."
+        },
+        {
+            text: "As unidades de relevo brasileiro foram classificadas por diferentes autores (Aroldo de Azevedo, Aziz Ab'Saber e Jurandyr Ross). Sobre a classificação de Jurandyr Ross (1989), é CORRETO afirmar:",
+            options: [
+                "Baseou-se exclusivamente em critérios altimétricos, dividindo o relevo brasileiro apenas em planaltos e planícies.",
+                "Considerou, além da altimetria, os processos morfoclimáticos e a estrutura geológica, propondo 28 unidades de relevo (planaltos, depressões e planícies).",
+                "Dividiu o relevo brasileiro em apenas três grandes unidades: Escudo Brasileiro, Bacia do Paraná e Cordilheira dos Andes."
+            ],
+            correct: 1,
+            justification: "Jurandyr Ross (1989) propôs uma classificação mais detalhada, considerando não apenas a ALTIMETRIA (altitude), mas também os processos MORFOCLIMÁTICOS (clima + relevo) e a ESTRUTURA GEOLÓGICA. Dividiu o relevo brasileiro em 28 unidades: 11 PLANALTOS, 11 DEPRESSÕES e 6 PLANÍCIES. Essa classificação é hoje a mais utilizada nos estudos do relevo brasileiro. A classificação de Aroldo de Azevedo (1949) foi essencialmente altimétrica; a de Aziz Ab'Saber (1958) já incorporou processos de sedimentação e erosão."
+        }
+    ];
+
+    const total = questions.length;
+    const letters = ['A', 'B', 'C'];
+    let currentIndex = 0;
+    let userAnswers = new Array(total).fill(null);
+    let userJustification = new Array(total).fill(null);
+
+    const mainWrapper = document.getElementById('mainWrapper');
+    const capaScreen = document.getElementById('capaScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const blankScreen = document.getElementById('blankScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsArea = document.getElementById('optionsArea');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressText = document.getElementById('progressText');
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const restartQuizBtn = document.getElementById('restartQuizBtn');
+    const endQuizBtn = document.getElementById('endQuizBtn');
+    const resultContent = document.getElementById('resultContent');
+    const fontMinus = document.getElementById('fontMinus');
+    const fontPlus = document.getElementById('fontPlus');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    // ===== TAMANHO DA FONTE =====
+    // Mínimo 12 px, máximo 72 px (o dobro do modelo original, que limitava a 36 px).
+    const FONT_MIN = 12;
+    const FONT_MAX = 72;
+    let currentFontSize = 16;
+
+    function applyFontSize() {
+        mainWrapper.style.fontSize = currentFontSize + 'px';
+        document.querySelectorAll('.question-text, .feedback, .opt-btn, .tool-btn, .action-btn, .start-btn')
+            .forEach(el => { el.style.fontSize = currentFontSize + 'px'; });
+    }
+
+    function setFontSize(size) {
+        currentFontSize = size;
+        applyFontSize();
+    }
+
+    fontMinus.addEventListener('click', () => setFontSize(Math.max(FONT_MIN, currentFontSize - 2)));
+    fontPlus.addEventListener('click', () => setFontSize(Math.min(FONT_MAX, currentFontSize + 2)));
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+
+    // ===== RENDERIZAÇÃO =====
+    function renderQuestion() {
+        const q = questions[currentIndex];
+
+        questionText.innerHTML = '<strong>Questão ' + (currentIndex + 1) + ':</strong> ' + q.text;
+
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = 'feedback';
+
+        // Monta as 3 alternativas
+        optionsArea.innerHTML = '';
+        q.options.forEach((optText, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.setAttribute('data-value', i);
+            btn.innerHTML = '<strong>' + letters[i] + ')</strong> ' + optText;
+            optionsArea.appendChild(btn);
+        });
+
+        // Restaura resposta já dada, se houver
+        const selected = userAnswers[currentIndex];
+        if (selected !== null) {
+            optionsArea.querySelectorAll('.opt-btn').forEach(btn => {
+                if (parseInt(btn.getAttribute('data-value'), 10) === selected) {
+                    btn.classList.add('selected');
+                }
+            });
+            if (userJustification[currentIndex]) {
+                const isCorrect = (selected === q.correct);
+                feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+                feedbackArea.style.display = 'block';
+                feedbackArea.innerHTML = userJustification[currentIndex];
+            }
+        }
+
+        progressText.innerText = 'Questão ' + (currentIndex + 1) + ' de ' + total;
+        prevBtn.disabled = (currentIndex === 0);
+        nextBtn.disabled = false;
+
+        applyFontSize();
+    }
+
+    function selectAnswer(value) {
+        const idx = parseInt(value, 10);
+        userAnswers[currentIndex] = idx;
+
+        const q = questions[currentIndex];
+        const isCorrect = (idx === q.correct);
+        const correctLetter = letters[q.correct];
+
+        const explanation =
+            '<strong>' + (isCorrect ? '✓ Correto!' : '✗ Incorreto') + '</strong><br>' +
+            '<strong>Justificativa:</strong> ' + q.justification + '<br>' +
+            '<span style="font-size:0.9rem; opacity:0.8;">Resposta correta: ' +
+            correctLetter + ') ' + q.options[q.correct] + '</span>';
+
+        userJustification[currentIndex] = explanation;
+
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+        feedbackArea.style.display = 'block';
+        feedbackArea.innerHTML = explanation;
+
+        optionsArea.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+        const selectedBtn = optionsArea.querySelector('.opt-btn[data-value="' + idx + '"]');
+        if (selectedBtn) selectedBtn.classList.add('selected');
+
+        applyFontSize();
+    }
+
+    optionsArea.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt-btn');
+        if (btn) selectAnswer(btn.getAttribute('data-value'));
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (userAnswers[currentIndex] === null) {
+            alert('Por favor, responda a questão antes de avançar.');
+            return;
+        }
+        if (currentIndex < total - 1) {
+            currentIndex++;
+            renderQuestion();
+        } else {
+            mostrarResultado();
+        }
+    });
+
+    // ===== RESULTADO =====
+    function mostrarResultado() {
+        let acertos = 0;
+        let erros = 0;
+        for (let i = 0; i < total; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === questions[i].correct) acertos++;
+            else if (userAnswers[i] !== null) erros++;
+        }
+        const percentual = (acertos / total) * 100;
+        const nota = (acertos / total) * 10;
+
+        let mensagem = "";
+        if (percentual >= 85) mensagem = "⭐ Excelente! Você domina os agentes endógenos e exógenos, o tectonismo, o vulcanismo, o intemperismo, a erosão, as estruturas geológicas e as classificações do relevo brasileiro. Parabéns!";
+        else if (percentual >= 70) mensagem = "👍 Muito bom! Revise os pontos que errou e tente novamente.";
+        else if (percentual >= 50) mensagem = "📘 Bom, mas dá para melhorar. Releia o material sobre agentes internos e externos, tipos de erosão, estruturas geológicas e classificações do relevo.";
+        else mensagem = "📚 Que tal revisar o conteúdo? Leia com calma e depois refaça o quiz.";
+
+        const resultadoHTML = `
+            <div class="stats">
+                <p><strong>✅ Acertos:</strong> ${acertos} (${percentual.toFixed(1)}%)</p>
+                <p><strong>❌ Erros:</strong> ${erros}</p>
+                <p><strong>🎓 Nota (0 a 10):</strong> ${nota.toFixed(1)}</p>
+                <p><strong>📊 Percentual de acerto:</strong> ${percentual.toFixed(1)}%</p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <p>${mensagem}</p>
+            </div>
+        `;
+        resultContent.innerHTML = resultadoHTML;
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    // ===== TELA EM BRANCO =====
+    function mostrarBlank() {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        blankScreen.classList.remove('active');
+        blankScreen.classList.add('active');
+        mainWrapper.classList.add('wrapper-blank');
+        blankScreen.innerHTML = '';
+    }
+
+    // ===== REFAZER =====
+    function refazerQuiz() {
+        userAnswers = new Array(total).fill(null);
+        userJustification = new Array(total).fill(null);
+        currentIndex = 0;
+        mainWrapper.classList.remove('wrapper-blank');
+        blankScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    }
+
+    startQuizBtn.addEventListener('click', () => {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    });
+
+    restartQuizBtn.addEventListener('click', refazerQuiz);
+    endQuizBtn.addEventListener('click', mostrarBlank);
+
+    setFontSize(16);
+</script>
+</body>
+</html>
