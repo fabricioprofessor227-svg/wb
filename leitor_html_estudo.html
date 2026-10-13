@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 Tutorial · Como Montar um Leitor HTML com Voz</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Verdana', 'Arial', sans-serif;
+    background: #f5f7f6;
+    color: #1a2e2a;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+  .reader-wrapper {
+    width: 100%;
+    max-width: 100%;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+    padding: 12px 18px;
+    border: 1px solid #dde5e0;
+  }
+  .fixed-header {
+    margin-bottom: 10px;
+    border-bottom: 2px solid #dde5e0;
+    padding-bottom: 6px;
+  }
+  .fixed-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f3d2e;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1a5e44;
+    margin-bottom: 4px;
+  }
+  .progress-bar-bg {
+    background: #dee6e1;
+    height: 6px;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: #1a7a58;
+    height: 6px;
+    width: 0%;
+    border-radius: 20px;
+    transition: width 0.2s;
+  }
+  .text-content {
+    text-align: justify;
+    padding: 6px 0 12px;
+    max-height: 75vh;
+    overflow-y: auto;
+    font-size: 18px;
+    line-height: 1.8;
+    margin: 0 2px;
+  }
+  .text-content p { margin-bottom: 0.8em; }
+  .text-content h2, .text-content h3, .text-content h4 {
+    margin: 1em 0 0.3em;
+    color: #154e3a;
+    font-weight: 600;
+  }
+  .text-content h3 { font-size: 1.15em; }
+  .text-content h4 { font-size: 1.02em; }
+  .text-content ul, .text-content ol {
+    padding-left: 1.8em;
+    margin: 0.4em 0;
+  }
+  .text-content li { margin-bottom: 0.3em; }
+  .text-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8em 0;
+    font-size: 0.85em;
+    text-align: left;
+  }
+  .text-content th, .text-content td {
+    border: 1px solid #b3cdbf;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .text-content th {
+    background: #ecf3ef;
+    color: #134531;
+    font-weight: 600;
+  }
+  .text-content tr:nth-child(even) { background: #f9fbfa; }
+  .text-content pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 0.78em;
+    line-height: 1.5;
+    font-family: 'Consolas', 'Monaco', monospace;
+    margin: 0.8em 0;
+    border: 1px solid #1e293b;
+  }
+  .text-content pre code { background: none; color: inherit; padding: 0; }
+  .text-content code {
+    background: #e8eefb;
+    color: #1e3a8a;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.88em;
+  }
+  .speech-word {
+    transition: background-color 0.15s ease;
+    border-radius: 3px;
+    padding: 1px 2px;
+    margin: 0 1px;
+  }
+  .speech-word.active {
+    background-color: #ffeb3b;
+    color: #000;
+    font-weight: 600;
+  }
+  .speech-word.upcoming { background-color: #fff9c4; }
+  .toolbar-single {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    margin: 14px 0 10px;
+    padding: 4px 0 6px;
+    border-top: 1px solid #dde5e0;
+    border-bottom: 1px solid #dde5e0;
+  }
+  .tool-btn {
+    background: #ecf3ef;
+    border: 1px solid #b3cdbf;
+    color: #134531;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 8px 12px;
+    border-radius: 48px;
+    min-width: 50px;
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tool-btn:active { background: #d0e0d7; transform: scale(0.96); }
+  .tool-btn:disabled { opacity: 0.4; background: #e0e8e3; border-color: #b6ccc1; pointer-events: none; }
+  .tool-btn.hidden { display: none; }
+  .tool-btn.encerrar {
+    background: #134531;
+    color: #fff;
+    border-color: #0f3d2e;
+  }
+  .tool-btn.encerrar:active { background: #0f3d2e; }
+  .tool-btn.ler-selecao {
+    background: #e0f2f1;
+    border-color: #80cbc4;
+    color: #00695c;
+  }
+  .tool-btn.ler-selecao:active { background: #b2dfdb; }
+  .tool-btn.ler-selecao.reading {
+    background: #ffeb3b;
+    border-color: #fbc02d;
+    color: #5d4037;
+  }
+  .tool-btn.ler-selecao.paused {
+    background: #ffe0b2;
+    border-color: #ffb74d;
+    color: #e65100;
+  }
+  .capa {
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .capa h1 { font-size: 24px; margin-bottom: 16px; color: #0f3d2e; }
+  .capa h2 { font-size: 17px; margin-bottom: 30px; color: #1a5e44; }
+  .capa p { font-size: 19px; color: #2a5e4a; }
+  .congrats-page {
+    text-align: center;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 40vh;
+  }
+  .congrats-page h2 { color: #1a5e44; margin-bottom: 10px; font-size: 1.8rem; }
+  @media (max-width: 700px) {
+    .reader-wrapper { padding: 8px 10px; border-radius: 16px; }
+    .tool-btn { padding: 6px 8px; min-width: 44px; font-size: 0.85rem; }
+    .text-content { max-height: 70vh; font-size: 16px; }
+    .fixed-header h1 { font-size: 1.2rem; }
+    .text-content table { font-size: 0.75em; }
+    .text-content pre { font-size: 0.7em; padding: 8px 10px; }
+    .capa h1 { font-size: 20px; }
+    .capa h2 { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="reader-wrapper">
+  <div class="fixed-header">
+    <h1>📚 Tutorial · Como Montar um Leitor HTML com Voz</h1>
+    <div class="progress-row">
+      <span id="pageXofY">Página 1 de 12</span>
+      <span id="progressPercent">8%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="text-content" id="pageContent"></div>
+
+  <div class="toolbar-single">
+    <button class="tool-btn" id="fontMinusBtn" title="Diminuir fonte">A−</button>
+    <button class="tool-btn" id="fontPlusBtn" title="Aumentar fonte">A+</button>
+    <button class="tool-btn" id="fullscreenBtn" title="Tela cheia">⛶</button>
+    <button class="tool-btn" id="prevBtn" title="Página anterior">◀</button>
+    <button class="tool-btn" id="nextBtn" title="Próxima página">▶</button>
+    <button class="tool-btn" id="speakBtn" title="Ouvir a página inteira desde o início">🔊</button>
+    <button class="tool-btn ler-selecao" id="lerSelecaoBtn" title="Ler somente o trecho selecionado">📖 Ler Seleção</button>
+    <button class="tool-btn hidden" id="pauseBtn" title="Pausar">⏸️</button>
+    <button class="tool-btn hidden" id="resumeBtn" title="Retomar">▶️</button>
+    <button class="tool-btn hidden" id="stopBtn" title="Parar">⏹️</button>
+    <select id="rateSelect" class="tool-btn" style="width: auto; background: #ecf3ef; border: 1px solid #b3cdbf; padding: 8px 12px;">
+      <option value="0.75">0.75x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
+    <button class="tool-btn encerrar hidden" id="encerrarBtn" title="Encerrar leitura">✖ Encerrar Leitura</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // =========================================================================
+  // CONTEÚDO DAS PÁGINAS
+  // Cada item é uma string HTML. Usamos template literals (crase) para
+  // permitir várias linhas. O arquivo deve ser salvo em UTF-8.
+  // =========================================================================
+  const paginas = [];
+
+  paginas.push(`
+    <div class="capa">
+      <h1>📚 Como Montar um Leitor HTML com Síntese de Voz</h1>
+      <h2>Guia Intermediário de HTML, CSS e JavaScript<br>
+      Estrutura do Projeto · Papel de Cada Linguagem<br>
+      Navegação por Páginas · Barra de Progresso · Web Speech API<br>
+      Leitura de Seleção · Ajuste de Fonte · Tela Cheia</h2>
+      <p>Material de Estudo Passo a Passo</p>
+    </div>
+  `);
+
+  paginas.push(`
+    <h3>📌 ÍNDICE</h3>
+    <ol>
+      <li>Visão Geral do Projeto – Pág. 3</li>
+      <li>As Três Linguagens do Front-end – Pág. 4</li>
+      <li>Estrutura do Arquivo HTML – Pág. 5</li>
+      <li>O Bloco &lt;style&gt;: CSS e o Visual – Pág. 6</li>
+      <li>O Bloco &lt;script&gt;: JavaScript e a Lógica – Pág. 7</li>
+      <li>Como Funciona a Navegação por Páginas – Pág. 8</li>
+      <li>Como Funciona a Síntese de Voz – Pág. 9</li>
+      <li>Destaque de Palavras e Leitura de Seleção – Pág. 10</li>
+      <li>Boas Práticas, Limitações e Próximos Passos – Pág. 11</li>
+      <li>🎉 Parabéns e Exercícios – Pág. 12</li>
+    </ol>
+  `);
+
+  paginas.push(`
+    <h3>1. Visão Geral do Projeto</h3>
+    <p>O arquivo que você analisou é um <strong>leitor de páginas HTML</strong> — uma aplicação web de arquivo único que permite navegar por várias páginas de conteúdo, ouvir o texto em voz alta, ler apenas um trecho selecionado, ajustar o tamanho da fonte e entrar em tela cheia.</p>
+
+    <h4>1.1 O que essa aplicação faz</h4>
+    <ul>
+      <li>Divide um conteúdo longo em várias páginas lógicas (armazenadas em um array JavaScript).</li>
+      <li>Mostra uma página por vez, com botões ◀ ▶ para navegar.</li>
+      <li>Exibe uma barra de progresso com percentual.</li>
+      <li>Usa a Web Speech API do navegador para ler o texto em voz alta.</li>
+      <li>Destaca a palavra que está sendo falada (amarelo) e as próximas (amarelo claro).</li>
+      <li>Permite selecionar um trecho e clicar em "📖 Ler Seleção" para ouvir só aquilo.</li>
+      <li>Permite ajustar o tamanho da fonte (A− / A+) e a velocidade da voz (0.75x a 2x).</li>
+      <li>Entra em tela cheia (⛶) e mostra um botão "Encerrar Leitura" na última página.</li>
+    </ul>
+
+    <h4>1.2 O que você vai aprender</h4>
+    <ul>
+      <li>Como estruturar um arquivo HTML único com CSS e JavaScript embutidos.</li>
+      <li>Como usar o DOM (Document Object Model) para trocar o conteúdo da tela.</li>
+      <li>Como usar eventos (cliques, seleção, fim de fala) para dar vida à página.</li>
+      <li>Como usar a Web Speech API para falar e destacar palavras em tempo real.</li>
+      <li>Como organizar o código em funções pequenas e reutilizáveis.</li>
+    </ul>
+
+    <h4>1.3 Por que esse formato é útil</h4>
+    <ul>
+      <li>Funciona offline, sem servidor nem instalação.</li>
+      <li>É portátil: um único arquivo <code>.html</code>.</li>
+      <li>É acessível: ajuda pessoas com dificuldade de leitura ou visão.</li>
+      <li>É didático: ótimo para apresentar conteúdo longo em etapas.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>2. As Três Linguagens do Front-end</h3>
+    <p>Todo site ou aplicação web no navegador é construído com três linguagens que trabalham juntas. Elas têm papéis bem definidos.</p>
+
+    <h4>2.1 HTML — a estrutura</h4>
+    <ul>
+      <li><strong>HyperText Markup Language</strong>.</li>
+      <li>Não é linguagem de programação: é linguagem de <em>marcação</em>.</li>
+      <li>Define o que existe na página: títulos, parágrafos, listas, botões, imagens.</li>
+      <li>Usa <strong>tags</strong> como <code>&lt;h1&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;button&gt;</code>.</li>
+      <li>É a "planta baixa" da casa.</li>
+    </ul>
+
+    <h4>2.2 CSS — o visual</h4>
+    <ul>
+      <li><strong>Cascading Style Sheets</strong>.</li>
+      <li>Define cores, fontes, espaçamentos, tamanhos, layout.</li>
+      <li>Fica dentro de <code>&lt;style&gt;</code> (neste caso) ou em arquivo separado.</li>
+      <li>Usa <strong>seletores</strong> (<code>body</code>, <code>.tool-btn</code>, <code>#pageContent</code>) e <strong>propriedades</strong>.</li>
+      <li>É a "decoração e pintura" da casa.</li>
+    </ul>
+
+    <h4>2.3 JavaScript — o comportamento</h4>
+    <ul>
+      <li><strong>Linguagem de programação</strong> de verdade.</li>
+      <li>Dá vida à página: reage a cliques, muda conteúdo, fala, calcula.</li>
+      <li>Fica dentro de <code>&lt;script&gt;</code>.</li>
+      <li>Manipula o <strong>DOM</strong> e usa <strong>APIs do navegador</strong> (como a de voz).</li>
+      <li>É a "eletricidade e encanamento" da casa.</li>
+    </ul>
+
+    <h4>2.4 Como se relacionam</h4>
+    <table>
+      <tr><th>Linguagem</th><th>Papel</th><th>Analogia</th></tr>
+      <tr><td>HTML</td><td>Estrutura</td><td>Paredes, portas, janelas</td></tr>
+      <tr><td>CSS</td><td>Aparência</td><td>Tinta, móveis, iluminação</td></tr>
+      <tr><td>JavaScript</td><td>Comportamento</td><td>Energia, água, automação</td></tr>
+    </table>
+
+    <h4>2.5 Onde cada uma aparece no arquivo</h4>
+    <ul>
+      <li><code>&lt;head&gt;</code> → metadados, título, <code>&lt;style&gt;</code>.</li>
+      <li><code>&lt;body&gt;</code> → HTML visível (header, conteúdo, botões).</li>
+      <li><code>&lt;script&gt;</code> no fim do body → JavaScript.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>3. Estrutura do Arquivo HTML</h3>
+    <p>Um arquivo HTML bem organizado tem uma anatomia previsível. Veja as partes principais do nosso leitor.</p>
+
+    <h4>3.1 Esqueleto básico</h4>
+    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="..."&gt;
+    &lt;title&gt;...&lt;/title&gt;
+    &lt;style&gt; ... CSS ... &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    ... HTML visível ...
+    &lt;script&gt; ... JavaScript ... &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+    <h4>3.2 O papel de cada tag</h4>
+    <ul>
+      <li><code>&lt;!DOCTYPE html&gt;</code> → avisa que é HTML5.</li>
+      <li><code>&lt;html lang="pt-BR"&gt;</code> → idioma (importante para leitores de tela e voz).</li>
+      <li><code>&lt;meta charset="UTF-8"&gt;</code> → acentos e emojis corretos.</li>
+      <li><code>&lt;meta name="viewport"&gt;</code> → responsividade em celular.</li>
+      <li><code>&lt;title&gt;</code> → texto da aba do navegador.</li>
+      <li><code>&lt;style&gt;</code> → CSS embutido.</li>
+      <li><code>&lt;script&gt;</code> → JavaScript embutido.</li>
+    </ul>
+
+    <h4>3.3 Estrutura do body no nosso projeto</h4>
+    <pre>&lt;div class="reader-wrapper"&gt;
+  &lt;div id="readerScreen" class="screen active"&gt;
+    &lt;div class="fixed-header"&gt; ... título, progresso ... &lt;/div&gt;
+    &lt;div class="text-content" id="pageContent"&gt;&lt;/div&gt;
+    &lt;div class="toolbar-single"&gt; ... botões ... &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+
+    <h4>3.4 Por que separar em blocos</h4>
+    <ul>
+      <li>Cada <code>&lt;div&gt;</code> tem uma responsabilidade clara.</li>
+      <li>Facilita o CSS (cada bloco tem sua classe).</li>
+      <li>Facilita o JavaScript (busca por <code>id</code>).</li>
+      <li>Melhora a manutenção e a leitura do código.</li>
+    </ul>
+
+    <h4>3.5 Ids e classes</h4>
+    <ul>
+      <li><strong>id</strong> → único na página (ex.: <code>pageContent</code>).</li>
+      <li><strong>class</strong> → pode repetir (ex.: <code>tool-btn</code>).</li>
+      <li>JavaScript usa id para pegar um elemento específico.</li>
+      <li>CSS usa classe para estilizar vários ao mesmo tempo.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>4. O Bloco &lt;style&gt;: CSS e o Visual</h3>
+    <p>O CSS define como a aplicação se parece. Vamos entender os padrões usados no nosso leitor.</p>
+
+    <h4>4.1 Reset e base</h4>
+    <pre>* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Verdana', sans-serif; background: #f5f7f6; ... }</pre>
+    <ul>
+      <li><code>*</code> → seletor universal (todos os elementos).</li>
+      <li><code>box-sizing: border-box</code> → padding e borda não estouram a largura.</li>
+      <li><code>body</code> → estilo global da página.</li>
+    </ul>
+
+    <h4>4.2 Layout com Flexbox</h4>
+    <pre>body { display: flex; align-items: center; justify-content: center; }
+.toolbar-single { display: flex; flex-wrap: wrap; gap: 5px; }</pre>
+    <ul>
+      <li><code>display: flex</code> → organiza filhos em linha ou coluna.</li>
+      <li><code>align-items</code> → alinhamento vertical.</li>
+      <li><code>justify-content</code> → alinhamento horizontal.</li>
+      <li><code>gap</code> → espaçamento entre itens.</li>
+      <li><code>flex-wrap: wrap</code> → quebra linha se faltar espaço.</li>
+    </ul>
+
+    <h4>4.3 Cores e tipografia</h4>
+    <ul>
+      <li>Cores em hexadecimal: <code>#1a7a58</code> (verde), <code>#f5f7f6</code> (cinza claro).</li>
+      <li><code>font-size</code> em <code>rem</code> (relativo ao root) ou <code>px</code>.</li>
+      <li><code>line-height</code> → espaço entre linhas (1.8 facilita leitura).</li>
+      <li><code>text-align: justify</code> → texto alinhado às duas margens.</li>
+    </ul>
+
+    <h4>4.4 Barra de progresso</h4>
+    <pre>.progress-bar-bg { background: #dee6e1; height: 6px; border-radius: 20px; }
+.progress-fill { background: #1a7a58; width: 0%; transition: width 0.2s; }</pre>
+    <ul>
+      <li>O fundo é cinza; o preenchimento é verde.</li>
+      <li>A largura (%) é alterada pelo JavaScript.</li>
+      <li><code>transition</code> → anima a mudança suavemente.</li>
+    </ul>
+
+    <h4>4.5 Destaque de palavras</h4>
+    <pre>.speech-word.active { background-color: #ffeb3b; font-weight: 600; }
+.speech-word.upcoming { background-color: #fff9c4; }</pre>
+    <ul>
+      <li>JavaScript adiciona/remove essas classes.</li>
+      <li><code>active</code> → palavra sendo falada agora.</li>
+      <li><code>upcoming</code> → próximas palavras.</li>
+    </ul>
+
+    <h4>4.6 Responsividade</h4>
+    <pre>@media (max-width: 700px) {
+  .text-content { font-size: 16px; }
+  .tool-btn { padding: 6px 8px; font-size: 0.85rem; }
+}</pre>
+    <ul>
+      <li><code>@media</code> → aplica regras só em certas larguras.</li>
+      <li>Em telas pequenas, fonte e botões diminuem.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>5. O Bloco &lt;script&gt;: JavaScript e a Lógica</h3>
+    <p>O JavaScript é o cérebro da aplicação. Vamos ver a organização geral do script.</p>
+
+    <h4>5.1 IIFE — isolando o código</h4>
+    <pre>(function(){
+  // todo o código aqui dentro
+})();</pre>
+    <ul>
+      <li><strong>IIFE</strong> = Immediately Invoked Function Expression.</li>
+      <li>Executa imediatamente e cria um escopo privado.</li>
+      <li>Evita poluir o escopo global.</li>
+      <li>Boa prática em scripts embutidos.</li>
+    </ul>
+
+    <h4>5.2 Array de páginas</h4>
+    <pre>const pageContents = [
+  \`&lt;div class="capa"&gt;...&lt;/div&gt;\`,
+  \`&lt;h3&gt;Índice&lt;/h3&gt;...\`,
+  // ...
+];</pre>
+    <ul>
+      <li>Cada item é uma <strong>string</strong> com HTML.</li>
+      <li>Usamos <strong>template literals</strong> (crase) para várias linhas.</li>
+      <li>O índice do array é a "página".</li>
+    </ul>
+
+    <h4>5.3 Variáveis de estado</h4>
+    <pre>let currentPage = 0;
+let isSpeaking = false;
+let isPaused = false;</pre>
+    <ul>
+      <li><code>let</code> → variável que pode mudar.</li>
+      <li><code>const</code> → constante (não reatribui).</li>
+      <li>Estado controla o que está acontecendo agora.</li>
+    </ul>
+
+    <h4>5.4 Pegando elementos do DOM</h4>
+    <pre>const pageContent = document.getElementById('pageContent');
+const speakBtn = document.getElementById('speakBtn');</pre>
+    <ul>
+      <li><code>document</code> → a página inteira.</li>
+      <li><code>getElementById</code> → busca pelo id.</li>
+      <li>Retorna um objeto que representa o elemento.</li>
+    </ul>
+
+    <h4>5.5 Funções</h4>
+    <pre>function updateUI() { ... }
+function changePage(delta) { ... }
+function startReading() { ... }</pre>
+    <ul>
+      <li>Função = bloco de código reutilizável.</li>
+      <li>Recebe parâmetros entre parênteses.</li>
+      <li>Pode retornar valor com <code>return</code>.</li>
+    </ul>
+
+    <h4>5.6 Eventos</h4>
+    <pre>speakBtn.addEventListener('click', startReading);
+nextBtn.addEventListener('click', () => changePage(1));</pre>
+    <ul>
+      <li><code>addEventListener</code> → "quando X acontecer, faça Y".</li>
+      <li>Eventos comuns: <code>click</code>, <code>change</code>, <code>selectionchange</code>.</li>
+      <li>A função é chamada quando o evento ocorre.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>6. Como Funciona a Navegação por Páginas</h3>
+    <p>A navegação é o coração da aplicação. Entenda o fluxo.</p>
+
+    <h4>6.1 O estado da página</h4>
+    <pre>let currentPage = 0; // começa na primeira
+const totalPages = pageContents.length;</pre>
+    <ul>
+      <li><code>currentPage</code> guarda o índice atual (0 a 11).</li>
+      <li><code>totalPages</code> é o total (12).</li>
+    </ul>
+
+    <h4>6.2 Trocando de página</h4>
+    <pre>function changePage(delta) {
+  const newPage = currentPage + delta;
+  if (newPage &gt;= 0 &amp;&amp; newPage &lt; totalPages) {
+    currentPage = newPage;
+    updateUI();
+  }
+}</pre>
+    <ul>
+      <li><code>delta</code> é −1 (voltar) ou +1 (avançar).</li>
+      <li>Verifica se a nova página é válida.</li>
+      <li>Atualiza o estado e chama <code>updateUI()</code>.</li>
+    </ul>
+
+    <h4>6.3 A função updateUI</h4>
+    <pre>function updateUI() {
+  resetSpeechState();
+  resetSelectionState();
+  pageContent.innerHTML = pageContents[currentPage];
+  tokenizeTextNodes(pageContent);
+  // atualiza contador, barra, botões...
+}</pre>
+    <ul>
+      <li>Para qualquer leitura em andamento.</li>
+      <li>Troca o conteúdo pelo da página atual.</li>
+      <li>Prepara o texto para a síntese de voz.</li>
+      <li>Atualiza números e barra de progresso.</li>
+    </ul>
+
+    <h4>6.4 Barra de progresso</h4>
+    <pre>const num = currentPage + 1;
+pageXofY.textContent = \`Página \${num} de \${totalPages}\`;
+const pct = (num / totalPages) * 100;
+progressFill.style.width = pct + '%';
+progressPercent.textContent = Math.round(pct) + '%';</pre>
+    <ul>
+      <li>Calcula a porcentagem concluída.</li>
+      <li>Atualiza o texto "Página X de Y".</li>
+      <li>Atualiza a largura da barra verde.</li>
+    </ul>
+
+    <h4>6.5 Desabilitando botões</h4>
+    <pre>prevBtn.disabled = (currentPage === 0);
+nextBtn.disabled = (currentPage === totalPages - 1);</pre>
+    <ul>
+      <li>Na primeira página, ◀ fica desabilitado.</li>
+      <li>Na última, ▶ fica desabilitado.</li>
+      <li>CSS <code>:disabled</code> deixa visualmente apagado.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>7. Como Funciona a Síntese de Voz (Web Speech API)</h3>
+    <p>O navegador oferece uma API nativa para falar texto: a <strong>Web Speech API</strong>. Veja como usamos.</p>
+
+    <h4>7.1 O objeto speechSynthesis</h4>
+    <pre>const synth = window.speechSynthesis;
+const utterance = new SpeechSynthesisUtterance(texto);</pre>
+    <ul>
+      <li><code>speechSynthesis</code> → "motor" de voz do navegador.</li>
+      <li><code>SpeechSynthesisUtterance</code> → representa um texto a ser falado.</li>
+      <li>Você pode configurar voz, velocidade, tom, volume.</li>
+    </ul>
+
+    <h4>7.2 Configurando a voz</h4>
+    <pre>const voice = getFemaleVoice();
+utterance.voice = voice;
+utterance.rate = parseFloat(rateSelect.value);</pre>
+    <ul>
+      <li><code>getVoices()</code> retorna as vozes disponíveis.</li>
+      <li>Filtramos por <code>lang === 'pt-BR'</code>.</li>
+      <li><code>rate</code> → velocidade (0.75x a 2x no nosso seletor).</li>
+      <li>Vozes variam por navegador e sistema operacional.</li>
+    </ul>
+
+    <h4>7.3 Como escolher voz feminina</h4>
+    <p>Como os nomes das vozes mudam muito entre sistemas, usamos uma estratégia de várias tentativas: primeiro procuramos vozes com "female", "mulher", "Maria", "Francisca", "Helena", etc. Se nenhuma for encontrada, usamos a primeira voz em português disponível. É uma solução prática — não existe um campo padronizado "gender" na API.</p>
+
+    <h4>7.4 Falando</h4>
+    <pre>synth.speak(utterance);
+synth.pause();   // pausa
+synth.resume();  // retoma
+synth.cancel();  // para</pre>
+    <ul>
+      <li><code>speak</code> inicia a fala.</li>
+      <li><code>pause</code> e <code>resume</code> controlam a pausa.</li>
+      <li><code>cancel</code> interrompe de vez.</li>
+    </ul>
+
+    <h4>7.5 Eventos importantes</h4>
+    <pre>utterance.onstart = function() { ... };
+utterance.onend = function() { ... };
+utterance.onerror = function(e) { ... };
+utterance.onboundary = function(event) { ... };</pre>
+    <ul>
+      <li><code>onstart</code> → quando começa a falar.</li>
+      <li><code>onend</code> → quando termina.</li>
+      <li><code>onerror</code> → quando ocorre erro.</li>
+      <li><code>onboundary</code> → quando chega a uma palavra.</li>
+    </ul>
+
+    <h4>7.6 O evento onboundary</h4>
+    <pre>utterance.onboundary = function(event) {
+  if (event.name === 'word') {
+    currentCharIndex = event.charIndex;
+    syncHighlightFromCharIndex();
+  }
+};</pre>
+    <ul>
+      <li>Dispara quando o motor de voz atinge um limite.</li>
+      <li><code>event.name === 'word'</code> → é uma palavra.</li>
+      <li><code>event.charIndex</code> → posição do caractere no texto.</li>
+      <li>Usamos isso para destacar a palavra na tela.</li>
+    </ul>
+
+    <h4>7.7 Tokenização do texto</h4>
+    <p>Para destacar palavras, primeiro quebramos o texto em <code>&lt;span&gt;</code>s:</p>
+    <pre>function tokenizeTextNodes(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  // para cada nó de texto, quebra em palavras e cria spans
+}</pre>
+    <ul>
+      <li><code>TreeWalker</code> percorre os nós de texto.</li>
+      <li>Cada palavra vira um <code>&lt;span class="speech-word"&gt;</code>.</li>
+      <li>Isso permite destacar individualmente.</li>
+      <li>Códigos <code>&lt;pre&gt;</code> e <code>&lt;code&gt;</code> são ignorados.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>8. Destaque de Palavras e Leitura de Seleção</h3>
+    <p>Dois recursos avançados do leitor: destacar a palavra falada e ler só um trecho selecionado.</p>
+
+    <h4>8.1 Destacando a palavra falada</h4>
+    <pre>function highlightWordSpan(spanIndex) {
+  if (previousActiveSpan !== null) {
+    wordSpans[previousActiveSpan].classList.remove('active');
+  }
+  const currentSpan = wordSpans[spanIndex];
+  currentSpan.classList.add('active');
+  currentSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}</pre>
+    <ul>
+      <li>Remove destaque anterior.</li>
+      <li>Adiciona <code>active</code> na palavra atual.</li>
+      <li><code>scrollIntoView</code> rola a tela até ela.</li>
+      <li>Isso dá feedback visual em tempo real.</li>
+    </ul>
+
+    <h4>8.2 Próximas palavras</h4>
+    <pre>function markUpcoming(spanIndex) {
+  for (let i = 1; i &lt;= 3; i++) {
+    wordSpans[spanIndex + i]?.classList.add('upcoming');
+  }
+}</pre>
+    <ul>
+      <li>Marca as 3 próximas palavras em amarelo claro.</li>
+      <li>Dá noção de ritmo da leitura.</li>
+      <li>Remove ao trocar de palavra.</li>
+    </ul>
+
+    <h4>8.3 Leitura de seleção</h4>
+    <pre>document.addEventListener('selectionchange', function() {
+  const sel = window.getSelection();
+  if (sel &amp;&amp; sel.rangeCount &gt; 0) {
+    const range = sel.getRangeAt(0);
+    if (!range.collapsed &amp;&amp; range.toString().trim()) {
+      lastSelectionRange = range.cloneRange();
+      lastSelectionText = sel.toString().trim();
+    }
+  }
+});</pre>
+    <ul>
+      <li><code>selectionchange</code> → quando a seleção muda.</li>
+      <li><code>getSelection()</code> → texto selecionado.</li>
+      <li><code>getRangeAt(0)</code> → intervalo da seleção.</li>
+      <li>Guardamos para usar depois.</li>
+    </ul>
+
+    <h4>8.4 Lendo a seleção</h4>
+    <pre>function startSelectionReading() {
+  const range = getActiveSelectionRange();
+  const spans = [];
+  pageContent.querySelectorAll('.speech-word').forEach(span =&gt; {
+    if (range.intersectsNode(span)) spans.push(span);
+  });
+  // cria utterance só com esses spans
+}</pre>
+    <ul>
+      <li>Pega o range guardado.</li>
+      <li>Descobre quais spans estão dentro dele.</li>
+      <li>Cria uma fala só com essas palavras.</li>
+      <li>Destaca durante a leitura.</li>
+    </ul>
+
+    <h4>8.5 Botão que muda de estado</h4>
+    <pre>function setSelectionBtnState(state) {
+  if (state === 'reading') {
+    lerSelecaoBtn.textContent = '⏸️ Pausar';
+  } else if (state === 'paused') {
+    lerSelecaoBtn.textContent = '▶️ Retomar';
+  } else {
+    lerSelecaoBtn.textContent = '📖 Ler Seleção';
+  }
+}</pre>
+    <ul>
+      <li>O botão muda de texto e cor conforme o estado.</li>
+      <li>Um único botão faz pausar/retomar/ler.</li>
+      <li>Economiza espaço na barra.</li>
+    </ul>
+  `);
+
+  paginas.push(`
+    <h3>9. Boas Práticas, Limitações e Próximos Passos</h3>
+    <p>Para encerrar, um resumo do que foi aprendido e como evoluir.</p>
+
+    <h4>9.1 Boas práticas usadas no projeto</h4>
+    <ul>
+      <li>IIFE para isolar o escopo.</li>
+      <li>Funções pequenas com nomes claros.</li>
+      <li>Estado explícito (isSpeaking, isPaused, etc.).</li>
+      <li>CSS com classes reutilizáveis.</li>
+      <li>Responsividade com <code>@media</code>.</li>
+      <li>Acessibilidade: botões com <code>title</code>, contraste, fonte ajustável.</li>
+      <li>Tratamento de erros na fala (onerror).</li>
+      <li>Tokens para evitar condições de corrida.</li>
+    </ul>
+
+    <h4>9.2 Limitações da Web Speech API</h4>
+    <ul>
+      <li>Vozes variam por navegador e sistema.</li>
+      <li>Alguns navegadores exigem interação do usuário para falar.</li>
+      <li>Eventos <code>onboundary</code> podem não disparar em todos.</li>
+      <li>Não funciona em todos os dispositivos igualmente.</li>
+      <li>Qualidade da voz depende do sistema.</li>
+      <li>Não há controle fino de pronúncia.</li>
+    </ul>
+
+    <h4>9.3 Como resolver a voz masculina</h4>
+    <p>A escolha da voz é feita pela função <code>getFemaleVoice()</code>. Ela procura por nomes conhecidos de vozes femininas em português. No Windows, por exemplo, existem "Microsoft Maria" e "Microsoft Francisca". No Android, "Google português do Brasil". No macOS, "Luciana". Se você ouvir voz masculina, verifique no Edge:</p>
+    <ol>
+      <li>Abra <strong>Configurações → Idiomas</strong>.</li>
+      <li>Certifique-se de que há uma voz feminina em português instalada.</li>
+      <li>Se não houver, adicione uma (ex.: "Microsoft Maria").</li>
+    </ol>
+
+    <h4>9.4 Como evoluir o projeto</h4>
+    <ul>
+      <li>Salvar a página atual no <code>localStorage</code>.</li>
+      <li>Adicionar marcadores (bookmarks).</li>
+      <li>Permitir busca dentro do conteúdo.</li>
+      <li>Modo escuro automático.</li>
+      <li>Múltiplos idiomas.</li>
+      <li>Integração com leitores de tela.</li>
+      <li>Testes automatizados.</li>
+    </ul>
+
+    <h4>9.5 Onde estudar mais</h4>
+    <ul>
+      <li><strong>MDN Web Docs</strong> (HTML, CSS, JS, Web Speech API).</li>
+      <li><strong>W3Schools</strong> (tutoriais rápidos).</li>
+      <li><strong>JavaScript.info</strong> (JavaScript moderno).</li>
+      <li><strong>CSS-Tricks</strong> (Flexbox, Grid).</li>
+      <li><strong>Web.dev</strong> (boas práticas).</li>
+    </ul>
+
+    <h4>9.6 Exercícios sugeridos</h4>
+    <ol>
+      <li>Adicione uma página nova ao array e veja a barra mudar.</li>
+      <li>Mude as cores do tema no CSS.</li>
+      <li>Crie um botão "Ir para o início".</li>
+      <li>Faça o botão de voz ler apenas o título da página.</li>
+      <li>Salve a página atual no <code>localStorage</code> e restaure ao abrir.</li>
+      <li>Adicione um modo escuro com um botão.</li>
+      <li>Implemente busca por palavra no texto.</li>
+      <li>Adicione um contador de palavras por página.</li>
+    </ol>
+  `);
+
+  paginas.push(`
+    <div class="congrats-page">
+      <h2>🎉 Parabéns!</h2>
+      <p style="margin-top: 20px;">Você concluiu o tutorial sobre <strong>como montar um leitor HTML com síntese de voz</strong>. Agora você conhece a estrutura de um arquivo HTML, o papel do CSS e do JavaScript, como funciona a navegação por páginas, a barra de progresso, a Web Speech API, o destaque de palavras e a leitura de seleção.</p>
+      <p style="margin-top: 20px;">Use este conhecimento para criar seus próprios leitores, tutoriais interativos e materiais acessíveis. Bons estudos!</p>
+    </div>
+  `);
+
+  // =========================================================================
+  // REFERÊNCIAS AOS ELEMENTOS
+  // =========================================================================
+  const pageContent = document.getElementById('pageContent');
+  const pageXofY = document.getElementById('pageXofY');
+  const progressFill = document.getElementById('progressFill');
+  const progressPercent = document.getElementById('progressPercent');
+  const fontMinusBtn = document.getElementById('fontMinusBtn');
+  const fontPlusBtn = document.getElementById('fontPlusBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const speakBtn = document.getElementById('speakBtn');
+  const lerSelecaoBtn = document.getElementById('lerSelecaoBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const rateSelect = document.getElementById('rateSelect');
+  const encerrarBtn = document.getElementById('encerrarBtn');
+
+  // =========================================================================
+  // ESTADO
+  // =========================================================================
+  const totalPages = paginas.length;
+  let currentPage = 0;
+  let fontSizeIndex = 4;
+  const fontSizes = [12, 14, 16, 18, 20, 24, 28, 32, 38, 42];
+
+  const synth = window.speechSynthesis;
+  let currentUtterance = null;
+  let isSpeaking = false;
+  let isPaused = false;
+  let speechToken = null;
+  let wordSpans = [];
+  let charIndexToSpanMap = [];
+  let currentCharIndex = 0;
+  let previousActiveSpan = null;
+
+  let selectionUtterance = null;
+  let isReadingSelection = false;
+  let isSelectionPaused = false;
+  let selectionToken = null;
+  let selectionWordSpans = [];
+  let selectionCharMap = [];
+  let selectionPrevSpan = null;
+  let lastSelectionRange = null;
+  let lastSelectionText = '';
+
+  // =========================================================================
+  // ESCOLHA DE VOZ FEMININA
+  // Tenta várias estratégias: nomes conhecidos em pt-BR, depois qualquer
+  // voz em pt-BR, depois qualquer voz disponível.
+  // =========================================================================
+  const NOMES_FEMININOS = [
+    'maria', 'francisca', 'luciana', 'helena', 'fernanda', 'camila',
+    'female', 'mulher', 'feminina', 'woman', 'google português do brasil',
+    'google portugues do brasil', 'microsoft maria', 'microsoft francisca',
+    'microsoft helena', 'microsoft fernanda', 'microsoft camila',
+    'ana', 'beatriz', 'carla', 'daniela', 'eduarda'
+  ];
+
+  function ehVozFeminina(v) {
+    const nome = (v.name || '').toLowerCase();
+    for (let i = 0; i < NOMES_FEMININOS.length; i++) {
+      if (nome.indexOf(NOMES_FEMININOS[i]) !== -1) return true;
+    }
+    return false;
+  }
+
+  function getFemaleVoice() {
+    if (!synth) return null;
+    const voices = synth.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    const ptBR = voices.filter(v => v.lang === 'pt-BR' || v.lang === 'pt_BR');
+    const pt = voices.filter(v => (v.lang || '').toLowerCase().indexOf('pt') === 0);
+
+    // 1ª tentativa: voz feminina pt-BR
+    for (const v of ptBR) {
+      if (ehVozFeminina(v)) return v;
+    }
+    // 2ª tentativa: voz feminina pt (qualquer região)
+    for (const v of pt) {
+      if (ehVozFeminina(v)) return v;
+    }
+    // 3ª tentativa: primeira voz pt-BR
+    if (ptBR.length > 0) return ptBR[0];
+    // 4ª tentativa: primeira voz pt
+    if (pt.length > 0) return pt[0];
+    // 5ª tentativa: qualquer voz
+    return voices[0];
+  }
+
+  // =========================================================================
+  // TOKENIZAÇÃO (quebra o texto em spans para destacar palavras)
+  // =========================================================================
+  function tokenizeTextNodes(root) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    const textNodes = [];
+    while (walker.nextNode()) {
+      textNodes.push(walker.currentNode);
+    }
+    textNodes.forEach(node => {
+      const text = node.textContent;
+      if (!text.trim()) return;
+      if (node.parentNode && (node.parentNode.tagName === 'PRE' || node.parentNode.tagName === 'CODE')) return;
+
+      const fragment = document.createDocumentFragment();
+      const parts = text.split(/(\s+)/);
+      parts.forEach(part => {
+        if (part.trim()) {
+          const span = document.createElement('span');
+          span.className = 'speech-word';
+          span.textContent = part;
+          fragment.appendChild(span);
+        } else {
+          fragment.appendChild(document.createTextNode(part));
+        }
+      });
+      node.parentNode.replaceChild(fragment, node);
+    });
+  }
+
+  function buildCharMapForSpans(spans) {
+    const map = [];
+    spans.forEach((span, idx) => {
+      const len = span.textContent.length;
+      for (let i = 0; i < len; i++) map.push(idx);
+      if (idx < spans.length - 1) map.push(idx);
+    });
+    return map;
+  }
+
+  // =========================================================================
+  // DESTAQUE
+  // =========================================================================
+  function highlightWordSpan(spanIndex) {
+    if (previousActiveSpan !== null && wordSpans[previousActiveSpan]) {
+      wordSpans[previousActiveSpan].classList.remove('active');
+      wordSpans[previousActiveSpan].classList.remove('upcoming');
+    }
+    if (spanIndex >= 0 && spanIndex < wordSpans.length) {
+      const s = wordSpans[spanIndex];
+      s.classList.add('active');
+      s.classList.remove('upcoming');
+      previousActiveSpan = spanIndex;
+      if (s.scrollIntoView) s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function markUpcoming(spanIndex) {
+    wordSpans.forEach(s => s.classList.remove('upcoming'));
+    for (let i = 1; i <= 3; i++) {
+      const idx = spanIndex + i;
+      if (idx < wordSpans.length) wordSpans[idx].classList.add('upcoming');
+    }
+  }
+
+  function clearAllWordHighlights() {
+    wordSpans.forEach(s => {
+      s.classList.remove('active');
+      s.classList.remove('upcoming');
+    });
+    previousActiveSpan = null;
+  }
+
+  function syncHighlightFromCharIndex() {
+    if (currentCharIndex >= charIndexToSpanMap.length) return;
+    const spanIdx = charIndexToSpanMap[currentCharIndex];
+    if (spanIdx !== undefined && spanIdx !== previousActiveSpan) {
+      highlightWordSpan(spanIdx);
+      markUpcoming(spanIdx);
+    }
+  }
+
+  // =========================================================================
+  // UI DOS BOTÕES DE FALA
+  // =========================================================================
+  function showPlayingUI() {
+    speakBtn.classList.add('hidden');
+    pauseBtn.classList.remove('hidden');
+    stopBtn.classList.remove('hidden');
+    resumeBtn.classList.add('hidden');
+  }
+  function showPausedUI() {
+    pauseBtn.classList.add('hidden');
+    stopBtn.classList.add('hidden');
+    resumeBtn.classList.remove('hidden');
+    speakBtn.classList.add('hidden');
+  }
+  function showStoppedUI() {
+    speakBtn.classList.remove('hidden');
+    pauseBtn.classList.add('hidden');
+    resumeBtn.classList.add('hidden');
+    stopBtn.classList.add('hidden');
+  }
+
+  // =========================================================================
+  // LEITURA DA PÁGINA INTEIRA
+  // =========================================================================
+  function startReading() {
+    if (!synth) { alert('Seu navegador não suporta síntese de voz.'); return; }
+    if (isReadingSelection || isSelectionPaused) stopSelectionReading();
+
+    if (isPaused) {
+      synth.resume();
+      isPaused = false;
+      isSpeaking = true;
+      showPlayingUI();
+      return;
+    }
+    if (isSpeaking) { stopReading(); return; }
+
+    if (pageContent.querySelectorAll('.speech-word').length === 0) {
+      tokenizeTextNodes(pageContent);
+    }
+    wordSpans = Array.from(pageContent.querySelectorAll('.speech-word'));
+    if (wordSpans.length === 0) return;
+    charIndexToSpanMap = buildCharMapForSpans(wordSpans);
+
+    const text = wordSpans.map(s => s.textContent).join(' ');
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    const voice = getFemaleVoice();
+    if (voice) {
+      currentUtterance.voice = voice;
+      currentUtterance.lang = voice.lang;
+    } else {
+      currentUtterance.lang = 'pt-BR';
+    }
+    currentUtterance.rate = parseFloat(rateSelect.value);
+
+    const token = Date.now();
+    speechToken = token;
+    currentCharIndex = 0;
+
+    currentUtterance.onboundary = function(event) {
+      if (speechToken !== token) return;
+      if (event.name === 'word') {
+        currentCharIndex = event.charIndex;
+        syncHighlightFromCharIndex();
+      }
+    };
+    currentUtterance.onstart = function() {
+      if (speechToken !== token) return;
+      isSpeaking = true;
+      isPaused = false;
+      showPlayingUI();
+    };
+    currentUtterance.onend = function() {
+      if (speechToken !== token) return;
+      resetSpeechState();
+    };
+    currentUtterance.onerror = function(e) {
+      if (speechToken !== token) return;
+      resetSpeechState();
+    };
+
+    synth.speak(currentUtterance);
+  }
+
+  function pauseReading() {
+    if (synth && isSpeaking && !isPaused) {
+      synth.pause();
+      isPaused = true;
+      showPausedUI();
+    }
+  }
+  function resumeReading() {
+    if (synth && isPaused) {
+      synth.resume();
+      isPaused = false;
+      isSpeaking = true;
+      showPlayingUI();
+    }
+  }
+  function stopReading() {
+    if (synth) synth.cancel();
+    resetSpeechState();
+  }
+  function resetSpeechState() {
+    if (synth && synth.speaking) synth.cancel();
+    if (currentUtterance) {
+      currentUtterance.onboundary = null;
+      currentUtterance.onstart = null;
+      currentUtterance.onend = null;
+      currentUtterance.onerror = null;
+      currentUtterance = null;
+    }
+    isSpeaking = false;
+    isPaused = false;
+    speechToken = null;
+    currentCharIndex = 0;
+    clearAllWordHighlights();
+    showStoppedUI();
+  }
+
+  // =========================================================================
+  // LEITURA DE SELEÇÃO
+  // =========================================================================
+  document.addEventListener('selectionchange', function() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      if (!range.collapsed && range.toString().trim() &&
+          pageContent.contains(range.commonAncestorContainer)) {
+        lastSelectionRange = range.cloneRange();
+        lastSelectionText = sel.toString().trim();
+      }
+    }
+  });
+
+  function getActiveSelectionRange() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      if (!range.collapsed && range.toString().trim() &&
+          pageContent.contains(range.commonAncestorContainer)) {
+        return range.cloneRange();
+      }
+    }
+    if (lastSelectionRange && lastSelectionText) return lastSelectionRange;
+    return null;
+  }
+
+  function setSelectionBtnState(state) {
+    lerSelecaoBtn.classList.remove('reading', 'paused');
+    if (state === 'reading') {
+      lerSelecaoBtn.textContent = '⏸️ Pausar';
+      lerSelecaoBtn.title = 'Pausar leitura da seleção';
+      lerSelecaoBtn.classList.add('reading');
+    } else if (state === 'paused') {
+      lerSelecaoBtn.textContent = '▶️ Retomar';
+      lerSelecaoBtn.title = 'Retomar leitura da seleção';
+      lerSelecaoBtn.classList.add('paused');
+    } else {
+      lerSelecaoBtn.textContent = '📖 Ler Seleção';
+      lerSelecaoBtn.title = 'Ler somente o trecho selecionado';
+    }
+  }
+
+  function clearSelectionHighlights() {
+    selectionWordSpans.forEach(s => {
+      s.classList.remove('active');
+      s.classList.remove('upcoming');
+    });
+    selectionPrevSpan = null;
+  }
+
+  function highlightSelectionWord(spanIdx) {
+    if (selectionPrevSpan !== null && selectionWordSpans[selectionPrevSpan]) {
+      selectionWordSpans[selectionPrevSpan].classList.remove('active');
+      selectionWordSpans[selectionPrevSpan].classList.remove('upcoming');
+    }
+    if (spanIdx >= 0 && spanIdx < selectionWordSpans.length) {
+      const s = selectionWordSpans[spanIdx];
+      s.classList.add('active');
+      s.classList.remove('upcoming');
+      selectionPrevSpan = spanIdx;
+      if (s.scrollIntoView) s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    selectionWordSpans.forEach((s, i) => {
+      if (i !== spanIdx) s.classList.remove('upcoming');
+    });
+    for (let i = 1; i <= 3; i++) {
+      const next = selectionWordSpans[spanIdx + i];
+      if (next) next.classList.add('upcoming');
+    }
+  }
+
+  function startSelectionReading() {
+    if (!synth) { alert('Seu navegador não suporta síntese de voz.'); return; }
+    if (isSpeaking || isPaused) stopReading();
+
+    const range = getActiveSelectionRange();
+    if (!range) {
+      alert('Nenhum texto selecionado. Selecione um trecho e clique em "Ler Seleção".');
+      return;
+    }
+
+    if (pageContent.querySelectorAll('.speech-word').length === 0) {
+      tokenizeTextNodes(pageContent);
+    }
+
+    const spans = [];
+    pageContent.querySelectorAll('.speech-word').forEach(span => {
+      try {
+        if (range.intersectsNode(span)) spans.push(span);
+      } catch (e) {}
+    });
+
+    if (spans.length === 0) {
+      alert('Nenhum texto selecionado. Selecione um trecho e clique em "Ler Seleção".');
+      return;
+    }
+
+    selectionWordSpans = spans;
+    selectionCharMap = buildCharMapForSpans(selectionWordSpans);
+    clearSelectionHighlights();
+
+    const text = spans.map(s => s.textContent).join(' ');
+    selectionUtterance = new SpeechSynthesisUtterance(text);
+    const voice = getFemaleVoice();
+    if (voice) {
+      selectionUtterance.voice = voice;
+      selectionUtterance.lang = voice.lang;
+    } else {
+      selectionUtterance.lang = 'pt-BR';
+    }
+    selectionUtterance.rate = parseFloat(rateSelect.value);
+
+    const token = Date.now();
+    selectionToken = token;
+
+    selectionUtterance.onboundary = function(event) {
+      if (selectionToken !== token) return;
+      if (event.name === 'word') {
+        const charIdx = event.charIndex;
+        if (charIdx < selectionCharMap.length) {
+          const spanIdx = selectionCharMap[charIdx];
+          if (spanIdx !== undefined) highlightSelectionWord(spanIdx);
+        }
+      }
+    };
+    selectionUtterance.onstart = function() {
+      if (selectionToken !== token) return;
+      isReadingSelection = true;
+      isSelectionPaused = false;
+      setSelectionBtnState('reading');
+      stopBtn.classList.remove('hidden');
+    };
+    selectionUtterance.onend = function() {
+      if (selectionToken !== token) return;
+      resetSelectionState();
+    };
+    selectionUtterance.onerror = function(e) {
+      if (selectionToken !== token) return;
+      resetSelectionState();
+    };
+
+    synth.speak(selectionUtterance);
+  }
+
+  function toggleSelectionReading() {
+    if (isReadingSelection) {
+      synth.pause();
+      isReadingSelection = false;
+      isSelectionPaused = true;
+      setSelectionBtnState('paused');
+    } else if (isSelectionPaused) {
+      synth.resume();
+      isReadingSelection = true;
+      isSelectionPaused = false;
+      setSelectionBtnState('reading');
+    } else {
+      startSelectionReading();
+    }
+  }
+
+  function stopSelectionReading() {
+    if (synth && (isReadingSelection || isSelectionPaused)) synth.cancel();
+    resetSelectionState();
+  }
+
+  function resetSelectionState() {
+    if (selectionUtterance) {
+      selectionUtterance.onboundary = null;
+      selectionUtterance.onstart = null;
+      selectionUtterance.onend = null;
+      selectionUtterance.onerror = null;
+      selectionUtterance = null;
+    }
+    isReadingSelection = false;
+    isSelectionPaused = false;
+    selectionToken = null;
+    clearSelectionHighlights();
+    setSelectionBtnState('idle');
+    stopBtn.classList.add('hidden');
+  }
+
+  // =========================================================================
+  // RENDER E NAVEGAÇÃO
+  // =========================================================================
+  function updateUI() {
+    resetSpeechState();
+    resetSelectionState();
+
+    pageContent.innerHTML = paginas[currentPage];
+    tokenizeTextNodes(pageContent);
+    lastSelectionRange = null;
+    lastSelectionText = '';
+
+    const num = currentPage + 1;
+    pageXofY.textContent = `Página ${num} de ${totalPages}`;
+    const pct = (num / totalPages) * 100;
+    progressFill.style.width = pct + '%';
+    progressPercent.textContent = Math.round(pct) + '%';
+
+    prevBtn.disabled = (currentPage === 0);
+    nextBtn.disabled = (currentPage === totalPages - 1);
+
+    if (currentPage === totalPages - 1) {
+      encerrarBtn.classList.remove('hidden');
+    } else {
+      encerrarBtn.classList.add('hidden');
+    }
+
+    if (pageContent.scrollTop) pageContent.scrollTop = 0;
+  }
+
+  function changePage(delta) {
+    const newPage = currentPage + delta;
+    if (newPage >= 0 && newPage < totalPages) {
+      currentPage = newPage;
+      updateUI();
+    }
+  }
+
+  function applyFontSize() {
+    pageContent.style.fontSize = fontSizes[fontSizeIndex] + 'px';
+    fontMinusBtn.disabled = (fontSizeIndex === 0);
+    fontPlusBtn.disabled = (fontSizeIndex === fontSizes.length - 1);
+  }
+
+  // =========================================================================
+  // EVENTOS
+  // =========================================================================
+  fontMinusBtn.addEventListener('click', () => {
+    if (fontSizeIndex > 0) fontSizeIndex--;
+    applyFontSize();
+  });
+  fontPlusBtn.addEventListener('click', () => {
+    if (fontSizeIndex < fontSizes.length - 1) fontSizeIndex++;
+    applyFontSize();
+  });
+  fullscreenBtn.addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  });
+  prevBtn.addEventListener('click', () => changePage(-1));
+  nextBtn.addEventListener('click', () => changePage(1));
+
+  speakBtn.addEventListener('click', startReading);
+  pauseBtn.addEventListener('click', pauseReading);
+  resumeBtn.addEventListener('click', resumeReading);
+  stopBtn.addEventListener('click', () => {
+    if (isReadingSelection || isSelectionPaused) stopSelectionReading();
+    if (isSpeaking || isPaused) stopReading();
+  });
+  lerSelecaoBtn.addEventListener('click', toggleSelectionReading);
+
+  rateSelect.addEventListener('change', () => {
+    const rate = parseFloat(rateSelect.value);
+    if (currentUtterance && isSpeaking && !isPaused) currentUtterance.rate = rate;
+    if (selectionUtterance && isReadingSelection && !isSelectionPaused) selectionUtterance.rate = rate;
+  });
+
+  encerrarBtn.addEventListener('click', () => {
+    if (synth) synth.cancel();
+    window.open('about:blank', '_blank');
+  });
+
+  // =========================================================================
+  // INICIALIZAÇÃO
+  // =========================================================================
+  applyFontSize();
+  updateUI();
+  if (synth) synth.getVoices();
+  if (synth && typeof synth.onvoiceschanged !== 'undefined') {
+    synth.onvoiceschanged = function() { /* vozes carregadas */ };
+  }
+
+})();
+</script>
+</body>
+</html>
