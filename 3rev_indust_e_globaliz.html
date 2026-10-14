@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Quiz · Terceira Revolução Industrial e Globalização</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Verdana', 'Arial', sans-serif;
+            background: #eef2f7;
+            color: #2d3748;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            margin: 0;
+        }
+        .quiz-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(45, 55, 72, 0.08);
+            padding: 14px 18px;
+            border: 1px solid #cbd5e0;
+            min-height: 60vh;
+            transition: all 0.2s;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .blank-screen {
+            display: none;
+            width: 100%;
+            min-height: 60vh;
+            background: transparent;
+        }
+        .blank-screen.active { display: block; }
+        .wrapper-blank {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sub {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        .options {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .opt-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 12px 24px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 48px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #2d3748;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+        .opt-btn:hover {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .opt-btn.selected {
+            background: #2b6cb0;
+            color: #ffffff;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .feedback.correct { background: #f0fff4; border-left: 6px solid #38a169; }
+        .feedback.wrong { background: #fff5f5; border-left: 6px solid #e53e3e; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 16px 0 8px;
+        }
+        .tool-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 48px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            color: #2d3748;
+            font-weight: 600;
+            transition: 0.15s;
+        }
+        .tool-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .tool-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .progress {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #2b6cb0;
+            text-align: right;
+            font-weight: 600;
+        }
+        .font-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .font-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 0.9rem;
+            transition: 0.15s;
+        }
+        .font-btn:hover { background: #cbd5e0; }
+        .result-screen { text-align: center; }
+        .result-box {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.15s;
+        }
+        .action-btn:hover { background: #2c5282; }
+        .action-btn.end-btn { background: #dd6b20; }
+        .action-btn.end-btn:hover { background: #c05621; }
+        .stats { font-size: 1.1rem; line-height: 1.8; }
+
+        .capa {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .capa h1 {
+            font-size: 26px;
+            margin-bottom: 16px;
+            color: #2b6cb0;
+        }
+        .capa h2 {
+            font-size: 17px;
+            margin-bottom: 12px;
+            color: #dd6b20;
+        }
+        .capa .subtitulo {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        .capa .autora {
+            font-size: 17px;
+            color: #718096;
+            margin-top: 24px;
+            font-style: italic;
+        }
+        .capa .info-quiz {
+            font-size: 15px;
+            color: #718096;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .start-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 22px;
+            font-weight: bold;
+            transition: 0.15s;
+        }
+        .start-btn:hover { background: #2c5282; }
+
+        @media (max-width: 640px) {
+            .quiz-wrapper { padding: 10px 12px; border-radius: 18px; }
+            .opt-btn { padding: 10px 16px; font-size: 1rem; min-width: 80px; }
+            .capa h1 { font-size: 20px; }
+            .capa h2 { font-size: 15px; }
+            .title { font-size: 1.2rem; }
+            .question-text { font-size: 0.98rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-wrapper" id="mainWrapper">
+    <!-- TELA DE CAPA -->
+    <div id="capaScreen" class="screen active">
+        <div class="capa">
+            <h1>📝 Quiz de Revisão</h1>
+            <h2>Terceira Revolução Industrial & Globalização</h2>
+            <p class="subtitulo">Internet, Robôs e Cidades Inteligentes · Globalização: O Que Você Precisa Saber</p>
+            <p class="autora">Material de Estudos para o Enem e Vestibulares</p>
+            <p class="info-quiz">20 afirmações para julgar VERDADEIRO ou FALSO</p>
+            <button class="start-btn" id="startQuizBtn">▶ Iniciar Quiz</button>
+        </div>
+    </div>
+
+    <!-- TELA DO QUIZ -->
+    <div id="quizScreen" class="screen">
+        <div class="font-controls">
+            <button class="font-btn" id="fontMinus">A−</button>
+            <button class="font-btn" id="fontPlus">A+</button>
+            <button class="font-btn" id="fullscreenBtn">⛶ Tela cheia</button>
+        </div>
+        <div class="title">📖 Terceira Revolução Industrial & Globalização</div>
+        <div class="sub">20 afirmações para julgar VERDADEIRO ou FALSO</div>
+        <div class="progress" id="progressText">Questão 1 de 20</div>
+        <div id="questionArea">
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsArea">
+                <button class="opt-btn" data-value="true">✅ Verdadeiro</button>
+                <button class="opt-btn" data-value="false">❌ Falso</button>
+            </div>
+            <div class="feedback" id="feedbackArea" style="display: none;"></div>
+        </div>
+        <div class="toolbar">
+            <button class="tool-btn" id="prevBtn" disabled>◀ Anterior</button>
+            <button class="tool-btn" id="nextBtn" disabled>Próxima ▶</button>
+        </div>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div id="resultScreen" class="screen result-screen">
+        <h2>🙏 Parabéns! Você concluiu o teste.</h2>
+        <div class="result-box" id="resultContent"></div>
+        <button class="action-btn" id="restartQuizBtn">🔄 Refazer quiz</button>
+        <button class="action-btn end-btn" id="returnSlideBtn">🔙 Retornar ao Slide</button>
+    </div>
+
+    <!-- TELA EM BRANCO -->
+    <div class="blank-screen" id="blankScreen"></div>
+</div>
+
+<script>
+    const questions = [
+        // ========== TERCEIRA REVOLUÇÃO INDUSTRIAL (1-10) ==========
+        {
+            text: "A Terceira Revolução Industrial, iniciada a partir da década de 1970, é marcada pela introdução da informática, robótica, automação industrial, satélites, biotecnologia e internet, substituindo o protagonismo do petróleo e da eletricidade da fase anterior.",
+            correct: true,
+            justification: "Correto. O texto afirma que, se na Segunda Revolução o show era do petróleo e da eletricidade, a partir de 1970 o jogo mudou para a tecnologia. A Terceira Revolução Industrial é caracterizada pela informática, robótica, automação, satélites, biotecnologia e internet. É a fase do conhecimento científico altamente aplicado."
+        },
+        {
+            text: "Os países protagonistas da Terceira Revolução Industrial incluem Estados Unidos, Japão, Alemanha e os Tigres Asiáticos (Coreia do Sul, Taiwan, Hong Kong, Singapura), que investiram pesado em pesquisa, tecnologia e inovação.",
+            correct: true,
+            justification: "Correto. O texto cita exatamente esses países como protagonistas, destacando que quem manda é o conhecimento científico altamente aplicado. As indústrias investem em pesquisa, tecnologia e inovação, surgindo os primeiros tecnopolos, como o Vale do Silício."
+        },
+        {
+            text: "O Vale do Silício, famoso tecnopolo na Califórnia, surgiu exclusivamente para fins comerciais e de entretenimento, sem qualquer relação com a corrida militar e tecnológica da Guerra Fria.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O texto afirma que o tecnopolo surgiu com base na corrida militar e tecnológica da Guerra Fria entre EUA e URSS. Tecnologias como GPS, internet (ARPANET), câmeras digitais e telas sensíveis ao toque foram criadas para fins militares antes de se tornarem comerciais."
+        },
+        {
+            text: "O GPS, hoje usado em aplicativos como iFood e Uber, foi originalmente criado para a navegação de mísseis, submarinos e aeronaves militares durante a Guerra Fria.",
+            correct: true,
+            justification: "Correto. O texto destaca que o GPS foi criado para navegação militar. A internet, chamada ARPANET, era um sistema de comunicação seguro e descentralizado capaz de resistir a ataques nucleares. Câmeras digitais serviam para satélites de espionagem."
+        },
+        {
+            text: "O toyotismo, modelo produtivo que ganhou força na Terceira Revolução Industrial, é caracterizado por produção diversificada, descentralizada, com estoques reduzidos e produção sob demanda, permitindo a adoção de novas tecnologias.",
+            correct: true,
+            justification: "Correto. O texto explica que o toyotismo é um modelo mais eficiente que o fordismo, permitindo produção diversificada, descentralizada, com estoques reduzidos e sob demanda. Ele incentivava a adoção de novas tecnologias, ao contrário do fordismo, que era rígido."
+        },
+        {
+            text: "O fordismo, modelo produtivo da Segunda Revolução Industrial, foi amplamente adotado na Terceira Revolução Industrial por sua flexibilidade e capacidade de incorporar inovações tecnológicas.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O texto afirma que o fordismo era um modelo rígido que não aceitava mudanças. Todas as inovações da Terceira Revolução não podiam ser implantadas em uma fábrica fordista, e assim ele caiu em desuso."
+        },
+        {
+            text: "A desconcentração industrial, processo observado na Terceira Revolução Industrial, permite que uma peça seja feita no Japão, outra na Alemanha, outra no Brasil, montada na China e vendida para o mundo, com rastreio em tempo real.",
+            correct: true,
+            justification: "Correto. O texto descreve exatamente esse processo de desconcentração industrial, onde a produção se espalha pelo mundo. Isso é possível graças às novas tecnologias de comunicação e logística."
+        },
+        {
+            text: "As cidades inteligentes (smart cities) surgem na Terceira Revolução Industrial com sensores, semáforos inteligentes, wi-fi público, aplicativos de mobilidade e carros elétricos, mas sem impacto no crescimento urbano.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O texto afirma que o crescimento urbano agora não é só horizontal ou vertical, mas também digital. Tudo é conectado, e as metrópoles se transformam em hubs tecnológicos com polos de inovação, co-working e startups."
+        },
+        {
+            text: "A uberização do trabalho, termo que descreve a precarização das relações de trabalho, é caracterizada por menos estabilidade, ausência de férias remuneradas, FGTS, previdência e seguro-desemprego.",
+            correct: true,
+            justification: "Correto. O texto explica que a uberização é a precarização das relações de trabalho. Apesar da flexibilidade de trabalhar de onde quiser, há menos estabilidade e mais incerteza, sem os direitos trabalhistas tradicionais."
+        },
+        {
+            text: "A Terceira Revolução Industrial trouxe apenas benefícios ambientais, eliminando problemas como lixo eletrônico, crise climática e crise energética, devido à eficiência das novas tecnologias.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O texto afirma que, se antes o problema era a fumaça e a fuligem, hoje é lixo eletrônico, crise climática e crise energética. A obsolescência programada faz com que celulares e computadores virem lixo em poucos anos, aumentando a exploração de recursos naturais."
+        },
+
+        // ========== GLOBALIZAÇÃO (11-20) ==========
+        {
+            text: "A globalização é um processo que reduz ou elimina barreiras econômicas e migratórias entre os países, aprofundando relações econômicas, sociais, culturais e políticas entre os povos do mundo.",
+            correct: true,
+            justification: "Correto. O texto define globalização exatamente como um processo que reduz ou elimina barreiras econômicas e migratórias, sendo uma espécie de aprofundamento nas relações econômicas, sociais, culturais e políticas."
+        },
+        {
+            text: "A origem da globalização remonta ao século XV, quando nações europeias se lançaram em busca de novas terras e riquezas, levando no século XVII a uma expansão sem precedentes no fluxo de trabalho entre países e continentes.",
+            correct: true,
+            justification: "Correto. O texto afirma que a origem da globalização nos leva ao século XV, com as navegações europeias. No século XVII, houve uma expansão sem precedentes no fluxo de trabalho entre países e continentes, iniciando uma conexão global que jamais foi interrompida."
+        },
+        {
+            text: "A globalização econômica envolve a integração dos mercados mundiais por meio de blocos econômicos e redução de barreiras comerciais, podendo gerar aumento da concorrência e também exploração da mão de obra.",
+            correct: true,
+            justification: "Correto. O texto explica que na esfera econômica a globalização acontece através da integração dos mercados mundiais, por blocos econômicos e redução de barreiras. O resultado pode gerar desde aumento da concorrência até exploração da mão de obra."
+        },
+        {
+            text: "Na economia globalizada, a produção se concentra em um único país para reduzir custos e otimizar recursos, evitando a dispersão da fabricação.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O texto afirma o contrário: na economia globalizada, a produção se dispersa. Produtos são fabricados em diferentes países para cortar custos e otimizar recursos."
+        },
+        {
+            text: "A globalização cultural envolve a disseminação de ideias, valores e costumes em escala global, podendo contribuir para uma padronização cultural que ameaça a diversidade e as tradições locais.",
+            correct: true,
+            justification: "Correto. O texto explica que a globalização cultural, através dos meios de comunicação em massa, facilita a difusão de ideias, resultando em uma cultura global compartilhada que pode contribuir para a padronização cultural, ameaçando a diversidade e as tradições locais."
+        },
+        {
+            text: "O inglês, como língua franca mundial, facilita a comunicação entre diferentes nações na globalização, mas pode marginalizar outras culturas e idiomas.",
+            correct: true,
+            justification: "Correto. O texto afirma que a globalização cultural traz a disseminação de línguas estrangeiras, especialmente o inglês, que se tornou a língua franca mundial. Isso facilita a comunicação, mas pode marginalizar outras culturas e idiomas."
+        },
+        {
+            text: "A globalização informacional, graças ao desenvolvimento das tecnologias da informação e da internet, encurta distâncias, mas não apresenta riscos à privacidade ou à segurança dos indivíduos.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O texto afirma que a globalização informacional coloca um alerta a respeito da privacidade do indivíduo, revelando o desafio de lidar com o controle da informação e seu impacto na segurança e liberdade. Além disso, há o perigo da desinformação através das fake news."
+        },
+        {
+            text: "As fake news, potencializadas pela globalização informacional, interferem direta e negativamente nas democracias e na relação das pessoas com as mídias.",
+            correct: true,
+            justification: "Correto. O texto destaca que não podemos esquecer do perigo da desinformação através das fake news, que interferem direta e negativamente nas democracias e na relação das pessoas com as mídias."
+        },
+        {
+            text: "A globalização política permite que países se unam na criação de políticas públicas para enfrentar desafios globais urgentes, como a crise climática, os fluxos migratórios e a segurança internacional.",
+            correct: true,
+            justification: "Correto. O texto afirma que a globalização também se manifesta na política, onde se observa países cada vez mais unidos na criação de políticas públicas para enfrentar desafios globais urgentes como a crise climática, os fluxos migratórios e a segurança internacional."
+        },
+        {
+            text: "Entre as consequências negativas da globalização estão o aumento da desigualdade econômica, exploração do trabalho, impactos ambientais, desemprego e dependência econômica dos países desenvolvidos, podendo comprometer a soberania dos países.",
+            correct: true,
+            justification: "Correto. O texto lista exatamente essas consequências negativas: aumento da desigualdade econômica, exploração do trabalho, impactos ambientais, desemprego e dependência econômica dos países desenvolvidos. Isso tudo pode comprometer a soberania dos países, causar homogeneização cultural e crises econômicas."
+        }
+    ];
+
+    const total = questions.length;
+    let currentIndex = 0;
+    let userAnswers = new Array(total).fill(null);
+    let userJustification = new Array(total).fill(null);
+
+    const mainWrapper = document.getElementById('mainWrapper');
+    const capaScreen = document.getElementById('capaScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const blankScreen = document.getElementById('blankScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsArea = document.getElementById('optionsArea');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressText = document.getElementById('progressText');
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const restartQuizBtn = document.getElementById('restartQuizBtn');
+    const returnSlideBtn = document.getElementById('returnSlideBtn');
+    const resultContent = document.getElementById('resultContent');
+    const fontMinus = document.getElementById('fontMinus');
+    const fontPlus = document.getElementById('fontPlus');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    let currentFontSize = 16;
+
+    function setFontSize(size) {
+        mainWrapper.style.fontSize = size + 'px';
+        const els = document.querySelectorAll('.question-text, .feedback, .opt-btn, .tool-btn, .action-btn, .start-btn');
+        els.forEach(el => el.style.fontSize = size + 'px');
+        currentFontSize = size;
+    }
+
+    fontMinus.addEventListener('click', () => setFontSize(Math.max(12, currentFontSize - 2)));
+    fontPlus.addEventListener('click', () => setFontSize(Math.min(36, currentFontSize + 2)));
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        questionText.innerHTML = `<strong>Afirmação ${currentIndex + 1}:</strong> ${q.text}`;
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = 'feedback';
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(btn => btn.classList.remove('selected'));
+        const selected = userAnswers[currentIndex];
+        if (selected !== null) {
+            btns.forEach(btn => {
+                if ((btn.getAttribute('data-value') === 'true' && selected === true) ||
+                    (btn.getAttribute('data-value') === 'false' && selected === false)) {
+                    btn.classList.add('selected');
+                }
+            });
+            if (userJustification[currentIndex]) {
+                const isCorrect = (selected === questions[currentIndex].correct);
+                feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+                feedbackArea.style.display = 'block';
+                feedbackArea.innerHTML = userJustification[currentIndex];
+            }
+        }
+        progressText.innerText = `Questão ${currentIndex + 1} de ${total}`;
+        prevBtn.disabled = (currentIndex === 0);
+        nextBtn.disabled = false;
+    }
+
+    function selectAnswer(value) {
+        const isTrue = (value === 'true');
+        userAnswers[currentIndex] = isTrue;
+        const q = questions[currentIndex];
+        const isCorrect = (isTrue === q.correct);
+        const correctText = q.correct ? "Verdadeiro" : "Falso";
+        const explanation =
+            `<strong>${isCorrect ? '✓ Correto!' : '✗ Incorreto'}</strong><br><strong>Justificativa:</strong> ${q.justification}<br><span style="font-size:0.9rem; opacity:0.8;">Resposta correta: ${correctText}.</span>`;
+        userJustification[currentIndex] = explanation;
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+        feedbackArea.style.display = 'block';
+        feedbackArea.innerHTML = explanation;
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(btn => btn.classList.remove('selected'));
+        const selectedBtn = Array.from(btns).find(btn => btn.getAttribute('data-value') === value);
+        if (selectedBtn) selectedBtn.classList.add('selected');
+    }
+
+    optionsArea.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt-btn');
+        if (btn) selectAnswer(btn.getAttribute('data-value'));
+    });
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    });
+    nextBtn.addEventListener('click', () => {
+        if (userAnswers[currentIndex] === null) {
+            alert('Por favor, responda a questão antes de avançar.');
+            return;
+        }
+        if (currentIndex < total - 1) {
+            currentIndex++;
+            renderQuestion();
+        } else {
+            mostrarResultado();
+        }
+    });
+
+    function mostrarResultado() {
+        let acertos = 0;
+        let erros = 0;
+        for (let i = 0; i < total; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === questions[i].correct) acertos++;
+            else if (userAnswers[i] !== null) erros++;
+        }
+        const percentual = (acertos / total) * 100;
+        const nota = (acertos / total) * 10;
+
+        let mensagem = "";
+        if (percentual >= 85) mensagem = "⭐ Excelente! Você domina os temas da Terceira Revolução Industrial e Globalização. Parabéns!";
+        else if (percentual >= 70) mensagem = "👍 Muito bom! Revise os pontos que errou e tente novamente.";
+        else if (percentual >= 50) mensagem = "📘 Bom, mas dá para melhorar. Releia o material sobre Terceira Revolução Industrial e Globalização.";
+        else mensagem = "📚 Que tal revisar o conteúdo? Leia com calma e depois refaça o quiz.";
+
+        const resultadoHTML = `
+            <div class="stats">
+                <p><strong>✅ Acertos:</strong> ${acertos} (${percentual.toFixed(1)}%)</p>
+                <p><strong>❌ Erros:</strong> ${erros}</p>
+                <p><strong>🎓 Nota (0 a 10):</strong> ${nota.toFixed(1)}</p>
+                <p><strong>📊 Percentual de acerto:</strong> ${percentual.toFixed(1)}%</p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <p>${mensagem}</p>
+            </div>
+        `;
+        resultContent.innerHTML = resultadoHTML;
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    function refazerQuiz() {
+        userAnswers = new Array(total).fill(null);
+        userJustification = new Array(total).fill(null);
+        currentIndex = 0;
+        mainWrapper.classList.remove('wrapper-blank');
+        blankScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    }
+
+    startQuizBtn.addEventListener('click', () => {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    });
+
+    restartQuizBtn.addEventListener('click', refazerQuiz);
+
+    returnSlideBtn.addEventListener('click', () => {
+        window.location.href = "https://docs.google.com/presentation/d/1Z8wmh5BX4VzfWZnpnNmLTFL9FiFgewY_QDLPJoq0Hww/edit?slide=id.h6aeab3f488d2c401_0_11#slide=id.h6aeab3f488d2c401_0_11";
+    });
+
+    setFontSize(16);
+</script>
+</body>
+</html>
