@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Quiz · Revolução Francesa</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Verdana', 'Arial', sans-serif;
+            background: #eef2f7;
+            color: #2d3748;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            margin: 0;
+        }
+        .quiz-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(45, 55, 72, 0.08);
+            padding: 14px 18px;
+            border: 1px solid #cbd5e0;
+            min-height: 60vh;
+            transition: all 0.2s;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .blank-screen {
+            display: none;
+            width: 100%;
+            min-height: 60vh;
+            background: transparent;
+        }
+        .blank-screen.active { display: block; }
+        .wrapper-blank {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sub {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        .options {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .opt-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 12px 24px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 48px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #2d3748;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+        .opt-btn:hover {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .opt-btn.selected {
+            background: #2b6cb0;
+            color: #ffffff;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .feedback.correct { background: #f0fff4; border-left: 6px solid #38a169; }
+        .feedback.wrong { background: #fff5f5; border-left: 6px solid #e53e3e; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 16px 0 8px;
+        }
+        .tool-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 48px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            color: #2d3748;
+            font-weight: 600;
+            transition: 0.15s;
+        }
+        .tool-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .tool-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .progress {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #2b6cb0;
+            text-align: right;
+            font-weight: 600;
+        }
+        .font-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .font-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 0.9rem;
+            transition: 0.15s;
+        }
+        .font-btn:hover { background: #cbd5e0; }
+        .result-screen { text-align: center; }
+        .result-box {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.15s;
+        }
+        .action-btn:hover { background: #2c5282; }
+        .action-btn.end-btn { background: #dd6b20; }
+        .action-btn.end-btn:hover { background: #c05621; }
+        .stats { font-size: 1.1rem; line-height: 1.8; }
+
+        .capa {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .capa h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #2b6cb0;
+        }
+        .capa h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #dd6b20;
+        }
+        .capa .subtitulo {
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        .capa .autora {
+            font-size: 17px;
+            color: #718096;
+            margin-top: 24px;
+            font-style: italic;
+        }
+        .capa .info-quiz {
+            font-size: 15px;
+            color: #718096;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .start-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 22px;
+            font-weight: bold;
+            transition: 0.15s;
+        }
+        .start-btn:hover { background: #2c5282; }
+
+        @media (max-width: 640px) {
+            .quiz-wrapper { padding: 10px 12px; border-radius: 18px; }
+            .opt-btn { padding: 10px 16px; font-size: 1rem; min-width: 80px; }
+            .capa h1 { font-size: 19px; }
+            .capa h2 { font-size: 14px; }
+            .title { font-size: 1.15rem; }
+            .question-text { font-size: 0.96rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-wrapper" id="mainWrapper">
+    <!-- TELA DE CAPA -->
+    <div id="capaScreen" class="screen active">
+        <div class="capa">
+            <h1>📝 Quiz de Revisão</h1>
+            <h2>Revolução Francesa (1789–1799)</h2>
+            <p class="subtitulo">Crise do Antigo Regime · Sociedade Estamental · Iluminismo · Estados Gerais<br>
+            Queda da Bastilha · Grande Medo · Declaração dos Direitos do Homem<br>
+            Monarquia Constitucional · Jacobinos e Girondinos · Convenção Nacional<br>
+            Terror · Diretório · 18 de Brumário · Era Napoleônica</p>
+            <p class="autora">Baseado na aula da Profª Bruna Rodrigues · Me Explica Essa História</p>
+            <p class="info-quiz">25 afirmações para julgar VERDADEIRO ou FALSO</p>
+            <button class="start-btn" id="startQuizBtn">▶ Iniciar Quiz</button>
+        </div>
+    </div>
+
+    <!-- TELA DO QUIZ -->
+    <div id="quizScreen" class="screen">
+        <div class="font-controls">
+            <button class="font-btn" id="fontMinus">A−</button>
+            <button class="font-btn" id="fontPlus">A+</button>
+            <button class="font-btn" id="fullscreenBtn">⛶ Tela cheia</button>
+        </div>
+        <div class="title">📖 Revolução Francesa (1789–1799)</div>
+        <div class="sub">25 afirmações para julgar VERDADEIRO ou FALSO</div>
+        <div class="progress" id="progressText">Questão 1 de 25</div>
+        <div id="questionArea">
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsArea">
+                <button class="opt-btn" data-value="true">✅ Verdadeiro</button>
+                <button class="opt-btn" data-value="false">❌ Falso</button>
+            </div>
+            <div class="feedback" id="feedbackArea" style="display: none;"></div>
+        </div>
+        <div class="toolbar">
+            <button class="tool-btn" id="prevBtn" disabled>◀ Anterior</button>
+            <button class="tool-btn" id="nextBtn" disabled>Próxima ▶</button>
+        </div>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div id="resultScreen" class="screen result-screen">
+        <h2>🙏 Parabéns! Você concluiu o teste.</h2>
+        <div class="result-box" id="resultContent"></div>
+        <button class="action-btn" id="restartQuizBtn">🔄 Refazer quiz</button>
+        <button class="action-btn end-btn" id="returnSlideBtn">📊 Retornar ao slide</button>
+    </div>
+
+    <!-- TELA EM BRANCO -->
+    <div class="blank-screen" id="blankScreen"></div>
+</div>
+
+<script>
+    const questions = [
+        // ==================== CONTEXTO E CRISE DO ANTIGO REGIME (1-6) ====================
+        {
+            text: "A Revolução Francesa é considerada por grande parte dos historiadores o marco da transição da Idade Moderna para a Idade Contemporânea, ao lado da Revolução Industrial, e durou dez anos, de 1789 a 1799.",
+            correct: true,
+            justification: "Correto. A Revolução Francesa (1789–1799) é um dos eventos mais importantes da história e, junto com a Revolução Industrial, marca a passagem da Idade Moderna para a Idade Contemporânea. O período de dez anos é fundamental para o Enem e vestibulares."
+        },
+        {
+            text: "Na França pré-revolucionária, a dinastia dos Bourbons, representada por Luís XVI e Maria Antonieta, era conhecida pelo luxo e pela ostentação, o que contribuiu para agravar a crise econômica do país.",
+            correct: true,
+            justification: "Correto. Luís XVI e Maria Antonieta, da dinastia dos Bourbons, eram famosos pelos gastos excessivos, roupas de luxo e banquetes. Essa ostentação colaborou diretamente para o quadro de crise econômica que antecedeu a Revolução."
+        },
+        {
+            text: "A França participou da Guerra dos Sete Anos contra a Inglaterra e saiu vitoriosa, o que trouxe riquezas e estabilidade econômica às vésperas da Revolução.",
+            correct: false,
+            justification: "A afirmativa é incorreta. A França PERDEU a Guerra dos Sete Anos contra a Inglaterra. Gastou homens, dinheiro, armas e remédios, e ainda teve que pagar indenização aos ingleses, agravando o quadro de recessão econômica e o rombo nos cofres públicos."
+        },
+        {
+            text: "Após a Guerra dos Sete Anos, a França ajudou as 13 colônias inglesas na luta pela independência por puro revanchismo, apesar de não ter condições financeiras para isso, o que aumentou ainda mais seus gastos.",
+            correct: true,
+            justification: "Correto. A França, sem condições financeiras, ajudou as 13 colônias por puro revanchismo, querendo se vingar da derrota na Guerra dos Sete Anos. Gastou com homens, remédios e armas, e ainda enviou a Estátua da Liberdade como presente, aumentando os gastos."
+        },
+        {
+            text: "Um período de quase três anos sem chuva na França foi um problema econômico grave porque mais de 90% do país era agrário e dependia fortemente da agricultura.",
+            correct: true,
+            justification: "Correto. Como mais de 90% da França era agrária e não havia processo de industrialização, a dependência da agricultura era enorme. A seca prolongada gerou escassez de produtos, que pela lei da oferta e da procura, elevou os preços e gerou inflação."
+        },
+        {
+            text: "As ideias iluministas, que circulavam pela França às vésperas da Revolução, defendiam o absolutismo e a concentração de poder nas mãos do rei como forma de garantir a ordem social.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O Iluminismo defendia o uso da razão e CRITICAVA o absolutismo, que era exatamente a forma de governo da França. Essa crítica aumentou a insatisfação de parte da população contra o regime monárquico."
+        },
+
+        // ==================== SOCIEDADE ESTAMENTAL (7-9) ====================
+        {
+            text: "A sociedade francesa era dividida em três estamentos: o Clero (1%), a Nobreza (2%) e o Terceiro Estado (97%), sendo que apenas o Terceiro Estado pagava impostos e era excluído da política.",
+            correct: true,
+            justification: "Correto. A sociedade estamental era dividida em Clero (1%), Nobreza (2%) e Terceiro Estado (97%). O Primeiro e o Segundo Estamento não pagavam impostos e tinham privilégios, enquanto o Terceiro Estado pagava impostos e era excluído da política."
+        },
+        {
+            text: "O Terceiro Estado era composto apenas por camponeses pobres e desempregados, não incluindo burgueses ricos, comerciantes ou trabalhadores urbanos.",
+            correct: false,
+            justification: "A afirmativa é incorreta. O Terceiro Estado era composto por TODO o resto da população: burgueses ricos, comerciantes, pequenos comerciantes, trabalhadores urbanos (sansculotes), camponeses, ladrões, mendigos e desempregados. Era a maioria esmagadora da sociedade."
+        },
+        {
+            text: "A sociedade estamental francesa era baseada no nascimento, sendo imóvel, ou seja, não havia mobilidade social entre os estamentos.",
+            correct: true,
+            justification: "Correto. A sociedade estamental era baseada no nascimento, portanto imóvel. Não havia como mudar de estamento social, o que gerava grande insatisfação, principalmente entre os membros do Terceiro Estado."
+        },
+
+        // ==================== ESTADOS GERAIS E ASSEMBLEIA NACIONAL (10-13) ====================
+        {
+            text: "Luís XVI convocou os Estados Gerais em 1789 para pedir ajuda e expor a crise financeira, reunindo representantes dos três estamentos na Assembleia dos Notáveis.",
+            correct: true,
+            justification: "Correto. Dado o cenário de crise, Luís XVI convocou os Estados Gerais em 1789, na Assembleia dos Notáveis, reunindo representantes dos três estamentos para expor a situação e pedir socorro financeiro."
+        },
+        {
+            text: "Na votação da Assembleia dos Notáveis, o voto era por pessoa, o que permitiu que o Terceiro Estado, sendo maioria, aprovasse a proposta de que o Clero e a Nobreza passassem a pagar impostos.",
+            correct: false,
+            justification: "A afirmativa é incorreta. A votação era POR ESTAMENTO, cada um com direito a um voto. Clero e Nobreza votaram 'não', e o Terceiro Estado votou 'sim', resultando em 2 votos contra 1. O Terceiro Estado não foi ouvido, o que gerou enorme insatisfação."
+        },
+        {
+            text: "Diante da recusa do rei em aceitar o voto por pessoa, o Terceiro Estado se retirou e se autoproclamou em Assembleia Nacional Constituinte, com o objetivo de elaborar uma nova Constituição para a França.",
+            correct: true,
+            justification: "Correto. O Terceiro Estado, insatisfeito por não ser ouvido, se retirou e se autoproclamou em Assembleia Nacional Constituinte, disposto a elaborar uma nova Constituição para a França. Luís XVI não deu importância inicialmente."
+        },
+        {
+            text: "A Queda da Bastilha, em 14 de julho de 1789, foi motivada exclusivamente pelo desejo de libertar prisioneiros políticos, já que a fortaleza estava lotada de opositores do rei.",
+            correct: false,
+            justification: "A afirmativa é incorreta. A Bastilha já estava desativada como prisão. Os revolucionários a tomaram por dois motivos: (1) dar um recado ao rei de que não tinham medo da monarquia; (2) ter acesso a armas e pólvora para enfrentar o Exército Real. A data marca o início oficial da Revolução."
+        },
+
+        // ==================== GRANDE MEDO E DECLARAÇÃO DOS DIREITOS (14-16) ====================
+        {
+            text: "O período conhecido como Grande Medo foi marcado pela fuga em massa de nobres para a Áustria, país de origem de Maria Antonieta, após camponeses se armarem, tomarem propriedades e matarem nobres.",
+            correct: true,
+            justification: "Correto. O espírito revolucionário se alastrou pelo campo, onde camponeses se armaram, tomaram propriedades, mataram nobres e incendiaram plantações. Isso gerou uma fuga em massa de nobres, principalmente para a Áustria, terra natal de Maria Antonieta."
+        },
+        {
+            text: "A Declaração dos Direitos do Homem e do Cidadão, publicada durante a primeira fase da Revolução, estabeleceu o fim da sociedade estamental, defendendo a igualdade civil e jurídica, o direito à propriedade privada e o fim da servidão.",
+            correct: true,
+            justification: "Correto. A Declaração dos Direitos do Homem e do Cidadão é um dos documentos mais importantes da história, tendo influenciado constituições democráticas mundo afora. Estabeleceu o fim da sociedade estamental, a igualdade civil e jurídica, o direito à propriedade privada e o fim da servidão."
+        },
+        {
+            text: "A primeira Constituição Francesa, elaborada em 1791, definiu como forma de governo a Monarquia Constitucional, com tripartição de poderes, voto censitário e separação entre Igreja e Estado.",
+            correct: true,
+            justification: "Correto. A Constituição de 1791 definiu a Monarquia Constitucional (rei reina, mas quem governa é a Constituição), a tripartição de poderes (Legislativo, Executivo e Judiciário, proposta por Montesquieu), o voto censitário (vota quem tem dinheiro) e a separação entre Igreja e Estado, com liberdade religiosa."
+        },
+
+        // ==================== JACOBINOS E GIRONDINOS (17-19) ====================
+        {
+            text: "O lema da Revolução Francesa, adotado pelos revolucionários, foi 'Liberdade, Igualdade e Fraternidade', de inspiração iluminista.",
+            correct: true,
+            justification: "Correto. O lema 'Liberdade, Igualdade e Fraternidade' foi adotado pelos revolucionários, com inspiração iluminista: liberdade econômica e religiosa, igualdade civil e jurídica, e fraternidade como união entre as camadas oprimidas."
+        },
+        {
+            text: "Os Jacobinos, considerados o partido mais radical, sentavam-se à esquerda do parlamento e defendiam a abolição da escravidão nas colônias, a república, o voto universal e a reforma agrária.",
+            correct: true,
+            justification: "Correto. Os Jacobinos, à esquerda do parlamento, eram os mais radicais: defendiam a abolição da escravidão nas colônias francesas, a proclamação da república, o voto universal e a reforma agrária. Eram ocupados pela pequena burguesia, camponeses e sansculotes."
+        },
+        {
+            text: "Os Girondinos, considerados o partido moderado e conservador, sentavam-se à direita do parlamento e defendiam a monarquia constitucional, o voto censitário e eram contrários à reforma agrária e à abolição da escravidão.",
+            correct: true,
+            justification: "Correto. Os Girondinos, à direita do parlamento, eram moderados e conservadores: defendiam a monarquia constitucional, o voto censitário e eram contrários à reforma agrária e à abolição da escravidão nas colônias francesas. Daí surgiram as conotações de esquerda e direita na política."
+        },
+
+        // ==================== CONVENÇÃO NACIONAL E TERROR (20-22) ====================
+        {
+            text: "Em 1792, os Jacobinos deram um golpe e tiraram os Girondinos do controle, iniciando a fase da Convenção Nacional (1792–1795), liderada por Robespierre e Danton.",
+            correct: true,
+            justification: "Correto. Em 1792, os Jacobinos se uniram e deram um golpe, tirando os Girondinos do controle e assumindo o comando. Iniciou-se a fase da Convenção Nacional (1792–1795), liderada por Robespierre e Danton, considerada a mais radical da Revolução."
+        },
+        {
+            text: "Durante a Convenção Nacional, os Jacobinos implementaram a Lei do Preço Máximo, tabelando preços de itens básicos, fizeram reforma agrária, abolira e a escravidão nas colônias e proclamaram a república com voto universal masculino.",
+            correct: true,
+            justification: "Correto. Durante a Convenção, os Jacobinos tentaram melhorar a economia com a Lei do Preço Máximo (tabelamento de pão, leite, ovos), fizeram reforma agrária (tomando bens da Igreja e dos nobres), abolira a escravidão nas colônias e proclamaram a república com nova constituição e voto universal masculino."
+        },
+        {
+            text: "A prática do Terror, implementada por Robespierre, consistia em eliminar qualquer oposição à revolução, com julgamentos pelo tribunal revolucionário e execuções na guilhotina, incluindo a morte do rei e da rainha.",
+            correct: true,
+            justification: "Correto. O Terror, proposto por Robespierre, consistia em eliminar qualquer oposição à revolução. Suspeitos eram julgados pelo tribunal revolucionário e mortos na guilhotina. Foi durante essa fase que Luís XVI e Maria Antonieta, que tentaram fugir para a Áustria, foram capturados e guilhotinados."
+        },
+
+        // ==================== DIRETÓRIO E 18 DE BRUMÁRIO (23-25) ====================
+        {
+            text: "A Reação Termidoriana, liderada pelos Girondinos, tirou os Jacobinos do poder e instaurou a última fase da Revolução, o Diretório (1795–1799), marcada pelo retorno da burguesia conservadora, do voto censitário e da inflação.",
+            correct: true,
+            justification: "Correto. A Reação Termidoriana tirou os Jacobinos do poder e instaurou o Diretório (1795–1799). Foi marcada pelo retorno da burguesia conservadora, voto censitário, conservadorismo e volta da inflação, além de muita corrupção e desvio de dinheiro. Robespierre foi guilhotinado."
+        },
+        {
+            text: "Napoleão Bonaparte deu um golpe conhecido como 18 de Brumário, que colocou fim ao Diretório e à Revolução Francesa, dando início à Era Napoleônica.",
+            correct: true,
+            justification: "Correto. Napoleão, líder militar contra a invasão austríaca, aproveitou a instabilidade do Diretório e deu o golpe do 18 de Brumário, encerrando o Diretório e a Revolução Francesa, e iniciando a Era Napoleônica."
+        },
+        {
+            text: "A Era Napoleônica foi um período de paz e estabilidade imediata para a França, sem relação com as guerras revolucionárias ou com a expansão territorial.",
+            correct: false,
+            justification: "A afirmativa é incorreta. A Era Napoleônica, que se seguiu à Revolução, foi marcada por guerras e expansão territorial. Napoleão liderou campanhas militares em toda a Europa, e o período não foi de paz imediata, mas de consolidação e expansão do poder francês."
+        }
+    ];
+
+    const total = questions.length;
+    let currentIndex = 0;
+    let userAnswers = new Array(total).fill(null);
+    let userJustification = new Array(total).fill(null);
+
+    const mainWrapper = document.getElementById('mainWrapper');
+    const capaScreen = document.getElementById('capaScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const blankScreen = document.getElementById('blankScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsArea = document.getElementById('optionsArea');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressText = document.getElementById('progressText');
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const restartQuizBtn = document.getElementById('restartQuizBtn');
+    const returnSlideBtn = document.getElementById('returnSlideBtn');
+    const resultContent = document.getElementById('resultContent');
+    const fontMinus = document.getElementById('fontMinus');
+    const fontPlus = document.getElementById('fontPlus');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    let currentFontSize = 16;
+
+    function setFontSize(size) {
+        mainWrapper.style.fontSize = size + 'px';
+        const els = document.querySelectorAll('.question-text, .feedback, .opt-btn, .tool-btn, .action-btn, .start-btn');
+        els.forEach(el => el.style.fontSize = size + 'px');
+        currentFontSize = size;
+    }
+
+    fontMinus.addEventListener('click', () => setFontSize(Math.max(12, currentFontSize - 2)));
+    fontPlus.addEventListener('click', () => setFontSize(Math.min(36, currentFontSize + 2)));
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        questionText.innerHTML = '<strong>Afirmação ' + (currentIndex + 1) + ':</strong> ' + q.text;
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = 'feedback';
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(btn => btn.classList.remove('selected'));
+        const selected = userAnswers[currentIndex];
+        if (selected !== null) {
+            btns.forEach(btn => {
+                if ((btn.getAttribute('data-value') === 'true' && selected === true) ||
+                    (btn.getAttribute('data-value') === 'false' && selected === false)) {
+                    btn.classList.add('selected');
+                }
+            });
+            if (userJustification[currentIndex]) {
+                const isCorrect = (selected === questions[currentIndex].correct);
+                feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+                feedbackArea.style.display = 'block';
+                feedbackArea.innerHTML = userJustification[currentIndex];
+            }
+        }
+        progressText.innerText = 'Questão ' + (currentIndex + 1) + ' de ' + total;
+        prevBtn.disabled = (currentIndex === 0);
+        nextBtn.disabled = false;
+    }
+
+    function selectAnswer(value) {
+        const isTrue = (value === 'true');
+        userAnswers[currentIndex] = isTrue;
+        const q = questions[currentIndex];
+        const isCorrect = (isTrue === q.correct);
+        const correctText = q.correct ? "Verdadeiro" : "Falso";
+        const explanation =
+            '<strong>' + (isCorrect ? '✓ Correto!' : '✗ Incorreto') + '</strong><br><strong>Justificativa:</strong> ' + q.justification + '<br><span style="font-size:0.9rem; opacity:0.8;">Resposta correta: ' + correctText + '.</span>';
+        userJustification[currentIndex] = explanation;
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+        feedbackArea.style.display = 'block';
+        feedbackArea.innerHTML = explanation;
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(btn => btn.classList.remove('selected'));
+        const selectedBtn = Array.from(btns).find(btn => btn.getAttribute('data-value') === value);
+        if (selectedBtn) selectedBtn.classList.add('selected');
+    }
+
+    optionsArea.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt-btn');
+        if (btn) selectAnswer(btn.getAttribute('data-value'));
+    });
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    });
+    nextBtn.addEventListener('click', () => {
+        if (userAnswers[currentIndex] === null) {
+            alert('Por favor, responda a questão antes de avançar.');
+            return;
+        }
+        if (currentIndex < total - 1) {
+            currentIndex++;
+            renderQuestion();
+        } else {
+            mostrarResultado();
+        }
+    });
+
+    function mostrarResultado() {
+        let acertos = 0;
+        let erros = 0;
+        for (let i = 0; i < total; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === questions[i].correct) acertos++;
+            else if (userAnswers[i] !== null) erros++;
+        }
+        const percentual = (acertos / total) * 100;
+        const nota = (acertos / total) * 10;
+
+        let mensagem = "";
+        if (percentual >= 85) mensagem = "⭐ Excelente! Você domina a Revolução Francesa. Parabéns!";
+        else if (percentual >= 70) mensagem = "👍 Muito bom! Revise os pontos que errou e tente novamente.";
+        else if (percentual >= 50) mensagem = "📘 Bom, mas dá para melhorar. Releia o material sobre a crise do Antigo Regime, a sociedade estamental, as fases da Revolução e o 18 de Brumário.";
+        else mensagem = "📚 Que tal revisar o conteúdo? Leia com calma e depois refaça o quiz.";
+
+        const resultadoHTML = `
+            <div class="stats">
+                <p><strong>✅ Acertos:</strong> ${acertos} (${percentual.toFixed(1)}%)</p>
+                <p><strong>❌ Erros:</strong> ${erros}</p>
+                <p><strong>🎓 Nota (0 a 10):</strong> ${nota.toFixed(1)}</p>
+                <p><strong>📊 Percentual de acerto:</strong> ${percentual.toFixed(1)}%</p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <p>${mensagem}</p>
+            </div>
+        `;
+        resultContent.innerHTML = resultadoHTML;
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    function refazerQuiz() {
+        userAnswers = new Array(total).fill(null);
+        userJustification = new Array(total).fill(null);
+        currentIndex = 0;
+        mainWrapper.classList.remove('wrapper-blank');
+        blankScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    }
+
+    startQuizBtn.addEventListener('click', () => {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    });
+
+    restartQuizBtn.addEventListener('click', refazerQuiz);
+    returnSlideBtn.addEventListener('click', () => {
+        window.location.href = 'https://docs.google.com/presentation/d/1bqi3nlYMGXkcEYGTr9CP_Df2yj6ppLD7tNPOp8JGUto/edit?slide=id.h17d321c4ce34e86_0_22#slide=id.h17d321c4ce34e86_0_22';
+    });
+
+    setFontSize(16);
+</script>
+</body>
+</html>
