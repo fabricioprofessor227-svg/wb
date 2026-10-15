@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Quiz · Nova Ordem Mundial (Geografia e Geopolítica)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Verdana', 'Arial', sans-serif;
+            background: #eef2f7;
+            color: #2d3748;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            margin: 0;
+        }
+        .quiz-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(45, 55, 72, 0.08);
+            padding: 14px 18px;
+            border: 1px solid #cbd5e0;
+            min-height: 60vh;
+            transition: all 0.2s;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .blank-screen {
+            display: none;
+            width: 100%;
+            min-height: 60vh;
+            background: transparent;
+        }
+        .blank-screen.active { display: block; }
+        .wrapper-blank {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sub {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 16px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.6;
+            color: #2d3748;
+        }
+        .options {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .opt-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 12px 24px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 48px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #2d3748;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+        .opt-btn:hover {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .opt-btn.selected {
+            background: #2b6cb0;
+            color: #ffffff;
+            border-color: #2b6cb0;
+        }
+        .feedback {
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .feedback.correct { background: #f0fff4; border-left: 6px solid #38a169; }
+        .feedback.wrong { background: #fff5f5; border-left: 6px solid #e53e3e; }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 16px 0 8px;
+        }
+        .tool-btn {
+            background: #edf2f7;
+            border: 1px solid #a0aec0;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 48px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            color: #2d3748;
+            font-weight: 600;
+            transition: 0.15s;
+        }
+        .tool-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #718096;
+        }
+        .tool-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .progress {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #2b6cb0;
+            text-align: right;
+            font-weight: 600;
+        }
+        .font-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .font-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 0.9rem;
+            transition: 0.15s;
+        }
+        .font-btn:hover { background: #cbd5e0; }
+        .result-screen { text-align: center; }
+        .result-box {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.15s;
+        }
+        .action-btn:hover { background: #2c5282; }
+        .action-btn.end-btn { background: #dd6b20; }
+        .action-btn.end-btn:hover { background: #c05621; }
+        .stats { font-size: 1.1rem; line-height: 1.8; }
+
+        .capa {
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .capa h1 {
+            font-size: 26px;
+            margin-bottom: 16px;
+            color: #2b6cb0;
+        }
+        .capa h2 {
+            font-size: 17px;
+            margin-bottom: 12px;
+            color: #dd6b20;
+        }
+        .capa .subtitulo {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        .capa .autora {
+            font-size: 17px;
+            color: #718096;
+            margin-top: 24px;
+            font-style: italic;
+        }
+        .capa .info-quiz {
+            font-size: 15px;
+            color: #718096;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .start-btn {
+            background: #2b6cb0;
+            color: #ffffff;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 22px;
+            font-weight: bold;
+            transition: 0.15s;
+        }
+        .start-btn:hover { background: #2c5282; }
+
+        @media (max-width: 640px) {
+            .quiz-wrapper { padding: 10px 12px; border-radius: 18px; }
+            .opt-btn { padding: 10px 16px; font-size: 1rem; min-width: 80px; }
+            .capa h1 { font-size: 20px; }
+            .capa h2 { font-size: 15px; }
+            .title { font-size: 1.2rem; }
+            .question-text { font-size: 0.98rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-wrapper" id="mainWrapper">
+    <!-- TELA DE CAPA -->
+    <div id="capaScreen" class="screen active">
+        <div class="capa">
+            <h1>📝 Quiz de Revisão</h1>
+            <h2>Nova Ordem Mundial</h2>
+            <p class="subtitulo">Geografia · Geopolítica<br>
+            Velha Ordem Mundial · Guerra Fria · Mundo Bipolar<br>
+            Nova Ordem Mundial · Unimultipolaridade · Globalização<br>
+            Blocos Econômicos · BRICS · Regionalizações Norte/Sul</p>
+            <p class="autora">Material de Estudos · Geo Ilustrada</p>
+            <p class="info-quiz">20 questões: 10 afirmações (V/F) e 10 objetivas (3 alternativas)</p>
+            <button class="start-btn" id="startQuizBtn">▶ Iniciar Quiz</button>
+        </div>
+    </div>
+
+    <!-- TELA DO QUIZ -->
+    <div id="quizScreen" class="screen">
+        <div class="font-controls">
+            <button class="font-btn" id="fontMinus">A−</button>
+            <button class="font-btn" id="fontPlus">A+</button>
+            <button class="font-btn" id="fullscreenBtn">⛶ Tela cheia</button>
+        </div>
+        <div class="title">📖 Nova Ordem Mundial</div>
+        <div class="sub">20 questões · 10 afirmações (V/F) e 10 objetivas (A/B/C)</div>
+        <div class="progress" id="progressText">Questão 1 de 20</div>
+        <div id="questionArea">
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsArea"></div>
+            <div class="feedback" id="feedbackArea" style="display: none;"></div>
+        </div>
+        <div class="toolbar">
+            <button class="tool-btn" id="prevBtn" disabled>◀ Anterior</button>
+            <button class="tool-btn" id="nextBtn" disabled>Próxima ▶</button>
+        </div>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div id="resultScreen" class="screen result-screen">
+        <h2>🙏 Parabéns! Você concluiu o teste.</h2>
+        <div class="result-box" id="resultContent"></div>
+        <button class="action-btn" id="restartQuizBtn">🔄 Refazer quiz</button>
+        <button class="action-btn end-btn" id="returnPresentationBtn">📽️ Retornar para a Apresentação</button>
+    </div>
+
+    <!-- TELA EM BRANCO -->
+    <div class="blank-screen" id="blankScreen"></div>
+</div>
+
+<script>
+    // ============================================================
+    // BANCO DE QUESTÕES
+    // 10 afirmações (V/F) + 10 objetivas (A/B/C)
+    // ============================================================
+    const questions = [
+        // ===================== AFIRMAÇÕES (V/F) — 1 a 10 =====================
+        {
+            type: "truefalse",
+            text: "Uma ordem mundial diz respeito às configurações gerais de hierarquia de poder em nível global em determinado tempo histórico, envolvendo disputas de poder, áreas de influência e disputas comerciais e econômicas entre as principais potências do planeta.",
+            correct: true,
+            justification: "Correto. O documento define ordem mundial como as configurações gerais de hierarquia de poder em nível global em determinado tempo histórico, envolvendo disputas de poder, áreas de influência, disputas comerciais e econômicas entre as principais potências. Além disso, ressalta que essas ordens não são imutáveis: um país pode perder força gradativamente, alterando as hierarquias globais."
+        },
+        {
+            type: "truefalse",
+            text: "A Velha Ordem Mundial corresponde ao período da Guerra Fria, marcado pelo Mundo Bipolar, com dois polos de poder: um capitalista liderado pelos Estados Unidos e outro socialista liderado pela União Soviética.",
+            correct: true,
+            justification: "Correto. O documento afirma que a Velha Ordem Mundial é o período da Guerra Fria, marcado pelo Mundo Bipolar, com dois polos de poder: um capitalista capitaneado pelos EUA e outro socialista liderado pela URSS. Essas potências buscavam expandir sua zona de influência nos aspectos político, militar e econômico."
+        },
+        {
+            type: "truefalse",
+            text: "Após a Segunda Guerra Mundial, a Europa saiu fortalecida e manteve sua posição de principal centro de poder global, impedindo o surgimento de novas potências.",
+            correct: false,
+            justification: "Incorreto. O documento afirma o oposto: depois da Segunda Guerra Mundial (1939–1945), a Europa ficou bastante fragilizada por conta dos desdobramentos do conflito e de sua participação direta, perdendo parte de sua influência e poder em nível global. Foi nesse contexto que surgiram duas grandes potências: EUA e URSS, inaugurando a Guerra Fria e a Velha Ordem Mundial."
+        },
+        {
+            type: "truefalse",
+            text: "Durante a Guerra Fria, a Corrida Espacial e a Corrida Armamentista foram formas de demonstrar força e poder, incluindo o uso de tecnologia nuclear com poder de destruição devastador.",
+            correct: true,
+            justification: "Correto. O documento cita que, nesse período, houve a Corrida Espacial (busca de mandar o homem à Lua primeiro) e a Corrida Armamentista, com o intuito de mostrar força e poder aos inimigos. As potências se armaram até os dentes, inclusive com tecnologia nuclear, cujas armas têm poder de destruição devastador."
+        },
+        {
+            type: "truefalse",
+            text: "A queda do Muro de Berlim, em novembro de 1989, é considerada o principal marco do fim da Guerra Fria e representou a derrocada da União Soviética, marcando a reestruturação das forças em nível global.",
+            correct: true,
+            justification: "Correto. O documento afirma que, em novembro de 1989, ocorreu a queda do Muro de Berlim, sem dúvidas o principal marco do fim da Guerra Fria, representando a derrocada da União Soviética. Isso marcou a reestruturação das forças em nível global e deixou pesquisadores e cientistas políticos perplexos para entender como seria dali para frente, iniciando a Nova Ordem Mundial."
+        },
+        {
+            type: "truefalse",
+            text: "Na Nova Ordem Mundial, do ponto de vista econômico, o mundo é marcado pela multipolaridade, com vários polos de poder, como União Europeia, Japão e China, além dos Estados Unidos.",
+            correct: true,
+            justification: "Correto. O documento explica que, na Nova Ordem Mundial, os EUA se sobressaem como principal potência econômica e militar, mas também há outros centros econômicos: União Europeia, Japão e China (que já mostrava sinais de grande potencial de crescimento). Assim, do ponto de vista econômico, a Nova Ordem é marcada pela multipolaridade — muitos polos de poder."
+        },
+        {
+            type: "truefalse",
+            text: "Na Nova Ordem Mundial, do ponto de vista militar, o mundo é unipolar, com os Estados Unidos muito à frente das demais potências, mesmo que algumas, como a Rússia, tenham grande poderio bélico.",
+            correct: true,
+            justification: "Correto. O documento afirma que, se pensarmos pelo ponto de vista militar/bélico, os EUA estarão muito à frente das demais potências. Embora algumas tenham grande poderio bélico, como a Rússia, não se comparam à força militar dos EUA. Dentro desse ponto de vista, trata-se de um mundo unipolar, cujo polo são os Estados Unidos. Por isso a Nova Ordem Mundial é caracterizada como unimultipolar: 'multi' para questões econômicas e 'uni' para a questão militar."
+        },
+        {
+            type: "truefalse",
+            text: "A globalização, uma das principais características da Nova Ordem Mundial, envolve grande integração entre os países, gerando o chamado mundo sem fronteiras, conectado por novas redes de informação favorecidas pela popularização da internet.",
+            correct: true,
+            justification: "Correto. O documento lista a globalização como a primeira característica da Nova Ordem Mundial, envolvendo grande integração entre os países e gerando o chamado mundo sem fronteiras, em que diversas partes do mundo se conectam através de novas redes de informação, favorecidas principalmente pelo advento e pela popularização da internet."
+        },
+        {
+            type: "truefalse",
+            text: "A internacionalização de mercados, segunda característica da Nova Ordem Mundial, ocorre quando grandes empresas se instalam em diferentes locais do mundo buscando vantagens locacionais, como menor custo de mão de obra, isenção de impostos e novos mercados consumidores.",
+            correct: true,
+            justification: "Correto. O documento apresenta a internacionalização de mercados como a segunda característica da Nova Ordem Mundial: as grandes empresas se instalam em diferentes locais do mundo buscando vantagens locacionais, como menor custo da mão de obra, isenção de impostos, novos mercados consumidores, entre outros aspectos. O documento chega a comentar, de forma bem-humorada, que 'um certo homem laranja' estaria querendo acabar com ela."
+        },
+        {
+            type: "truefalse",
+            text: "Na Velha Ordem Mundial, a regionalização delimitava claramente Leste e Oeste, enquanto na Nova Ordem Mundial a divisão passa a ser Norte e Sul, tendo como critério central a economia, com os países do Norte notoriamente mais desenvolvidos que os do Sul.",
+            correct: true,
+            justification: "Correto. O documento afirma que, na Velha Ordem, existia clara delimitação entre Leste (liderado pela URSS) e Oeste (liderado pelos EUA), com exceções como Cuba (no Oeste, mas aliada da URSS). Na Nova Ordem, a divisão passa a ser Norte e Sul, tendo como critério central a economia, com os países do Norte notoriamente mais desenvolvidos que os do Sul. A Austrália é exceção incluída no critério como país do Norte, o que explica a 'curvinha' na linha no mapa."
+
+        // ===================== OBJETIVAS (A/B/C) — 11 a 20 =====================
+        ,
+        {
+            type: "multiple",
+            text: "O que caracteriza uma ordem mundial e por que ela não é imutável?",
+            options: [
+                "É um tratado comercial fixo entre países, que só muda se todos concordarem em renegociá-lo.",
+                "É a configuração geral de hierarquia de poder em nível global em determinado tempo histórico, podendo se modificar ao longo do tempo, com potências perdendo força gradativamente.",
+                "É um sistema de alianças militares imutáveis, definido uma única vez após cada grande guerra e válido para sempre."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento define ordem mundial como as configurações gerais de hierarquia de poder em nível global em determinado tempo histórico, envolvendo disputas de poder, áreas de influência, disputas comerciais e econômicas entre as principais potências. Ressalta também que essas ordens não são imutáveis: um país considerado grande potência pode ir perdendo gradativamente essa força, mudando as hierarquias de poder em nível global."
+        },
+        {
+            type: "multiple",
+            text: "Qual evento é apontado como o principal marco do fim da Guerra Fria e o que ele representou?",
+            options: [
+                "A Corrida Espacial, que representou a vitória definitiva dos EUA sobre a URSS.",
+                "A queda do Muro de Berlim, em novembro de 1989, representando a derrocada da União Soviética e a reestruturação das forças em nível global.",
+                "A criação da União Europeia, que substituiu a URSS como polo socialista."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento afirma que, em novembro de 1989, ocorreu a queda do Muro de Berlim, sem dúvidas o principal marco do fim da Guerra Fria, representando a derrocada da União Soviética. Isso marcou a reestruturação das forças em nível global, deixando pesquisadores e cientistas políticos 'de cabelo em pé' para entender como seria dali para frente, iniciando a Nova Ordem Mundial."
+        },
+        {
+            type: "multiple",
+            text: "Por que a Nova Ordem Mundial é caracterizada como 'unimultipolar'?",
+            options: [
+                "Porque é unipolar na economia (só os EUA importam) e multipolar na política (vários partidos mandam no mundo).",
+                "Porque é multipolar na economia (vários polos de poder econômico) e unipolar no militar (EUA muito à frente das demais potências).",
+                "Porque é unipolar tanto na economia quanto no militar, mas com vários blocos econômicos regionais sem poder real."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento explica que, do ponto de vista econômico, a Nova Ordem Mundial é marcada pela multipolaridade (muitos polos de poder: UE, Japão, China, além dos EUA). Já do ponto de vista militar, é unipolar, pois os EUA estão muito à frente das demais potências, mesmo que algumas, como a Rússia, tenham grande poderio bélico. Por isso a Nova Ordem é caracterizada como unimultipolar: 'multi' para questões econômicas e 'uni' para a questão militar."
+        },
+        {
+            type: "multiple",
+            text: "Quais são as três principais características da Nova Ordem Mundial apresentadas no documento?",
+            options: [
+                "Globalização, internacionalização de mercados e formação de blocos econômicos.",
+                "Corrida Espacial, Corrida Armamentista e Mundo Bipolar.",
+                "Guerra Fria, queda do Muro de Berlim e surgimento da URSS."
+            ],
+            correct: 0,
+            justification: "Alternativa A. O documento separa três principais características da Nova Ordem Mundial: (1) globalização, envolvendo grande integração entre os países e o mundo sem fronteiras; (2) internacionalização de mercados, com grandes empresas se instalando em diferentes locais do mundo em busca de vantagens locacionais; e (3) formação de blocos econômicos, como União Europeia, Mercosul e Nafta, que buscam aumentar a cooperação e a integração econômica."
+        },
+        {
+            type: "multiple",
+            text: "O que são os BRICS e qual país tem se sobressaído dentro do grupo, segundo o documento?",
+            options: [
+                "São um bloco militar formado por Brasil, Rússia, Índia, China e África do Sul; a Rússia tem se sobressaído.",
+                "São países emergentes com grande potencial de desenvolvimento econômico (Brasil, Rússia, Índia, China e África do Sul); a China tem se sobressaído, consolidando-se como uma das grandes potências mundiais.",
+                "São países desenvolvidos que formam o G7; os EUA têm se sobressaído dentro do grupo."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento define os BRICS como Brasil, Rússia, Índia, China e África do Sul, listados como países emergentes, países com grande potencial de desenvolvimento econômico, isso ali no começo dos anos 2000. Atualmente, dentro dos BRICS, a China tem se sobressaindo muito e se consolidando como uma das grandes potências do mundo — na data de gravação do vídeo, a segunda maior do mundo — conseguindo inclusive fazer frente aos Estados Unidos."
+        },
+        {
+            type: "multiple",
+            text: "Como era a regionalização na Velha Ordem Mundial e como ela se altera na Nova Ordem Mundial?",
+            options: [
+                "Na Velha Ordem, a divisão era Norte/Sul (critério econômico); na Nova Ordem, passa a ser Leste/Oeste (critério político).",
+                "Na Velha Ordem, a divisão era Leste/Oeste (Oeste liderado pelos EUA e Leste pela URSS); na Nova Ordem, passa a ser Norte/Sul, tendo como critério central a economia.",
+                "Na Velha Ordem, a divisão era entre países ricos e pobres; na Nova Ordem, passa a ser entre países nucleares e não nucleares."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento explica que, na Velha Ordem, existia clara delimitação entre Leste (liderado pela União Soviética) e Oeste (liderado pelos Estados Unidos), com exceções como Cuba, situada no Oeste, porém aliada da URSS. Na Nova Ordem Mundial, isso muda: a divisão passa a ser Norte e Sul, tendo como critério central a economia, com os países do Norte sendo notoriamente mais desenvolvidos do que os países do Sul. A Austrália é exceção incluída no critério como país do Norte, o que explica a 'curvinha' na linha no mapa."
+        },
+        {
+            type: "multiple",
+            text: "O que buscavam as duas grandes potências da Velha Ordem Mundial ao expandir suas zonas de influência?",
+            options: [
+                "Apenas expandir suas religiões e línguas pelo mundo, sem interesse político ou econômico.",
+                "Expandir sua zona de influência em nível global nas questões política, militar e econômica.",
+                "Apenas competir para ver quem chegava primeiro à Lua, sem outras disputas."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento afirma que o que as duas grandes potências (EUA e URSS) buscavam era expandir a sua zona de influência em nível global nas questões política, militar e econômica. A Corrida Espacial (mandar o homem à Lua primeiro) e a Corrida Armamentista (com tecnologia nuclear) eram formas de mostrar força e poder aos inimigos dentro dessa disputa mais ampla."
+        },
+        {
+            type: "multiple",
+            text: "Qual é a diferença entre a Corrida Espacial e a Corrida Armamentista citadas no documento?",
+            options: [
+                "A Corrida Espacial era uma competição para ver quem tinha mais satélites; a Corrida Armamentista era uma competição para ver quem tinha mais soldados.",
+                "A Corrida Espacial buscava mandar o homem à Lua primeiro; a Corrida Armamentista buscava mostrar força e poder, com as potências se armando até os dentes, inclusive com tecnologia nuclear.",
+                "A Corrida Espacial era uma competição econômica; a Corrida Armamentista era uma competição esportiva entre os dois blocos."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento cita que, nesse período, houve a chamada Corrida Espacial, quando as duas grandes potências buscavam mandar o homem à Lua primeiro. E também a Corrida Armamentista, com o intuito de mostrar força e poder para os inimigos. Nesta, elas acabaram se armando até os dentes, utilizando inclusive tecnologia nuclear — armas com poder de destruição devastador, como é bem sabido."
+        },
+        {
+            type: "multiple",
+            text: "O que o documento destaca sobre a China no contexto da Nova Ordem Mundial?",
+            options: [
+                "A China é apresentada como um país sem relevância econômica, que só aparece como membro dos BRICS por questão geográfica.",
+                "A China já começava a mostrar sinais de uma economia com grande potencial de crescimento e, atualmente, tem se sobressaído muito, consolidando-se como uma das grandes potências do mundo e fazendo frente aos Estados Unidos.",
+                "A China é apresentada como o único polo de poder militar capaz de superar os Estados Unidos na Nova Ordem Mundial."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento afirma que, entre os outros centros econômicos da Nova Ordem Mundial, além da UE e do Japão, estava a China, que já começava a mostrar sinais de uma economia com grande potencial de crescimento. Mais adiante, ao tratar dos BRICS, o documento destaca que atualmente a China tem se sobressaindo muito e se consolidando como uma das grandes potências do mundo — na data de gravação do vídeo, a segunda maior do mundo — conseguindo inclusive fazer frente ao todo-poderoso Estados Unidos."
+        },
+        {
+            type: "multiple",
+            text: "Qual é o critério central da regionalização Norte/Sul na Nova Ordem Mundial e qual exceção é citada no documento?",
+            options: [
+                "O critério é a localização geográfica pura (hemisfério norte x hemisfério sul); a exceção citada é o Brasil, incluído no Norte.",
+                "O critério central é a economia, com os países do Norte notoriamente mais desenvolvidos que os do Sul; a exceção citada é a Austrália, incluída como país do Norte, o que explica a 'curvinha' na linha no mapa.",
+                "O critério é o regime político (democracia x autoritarismo); a exceção citada é Cuba, incluída no Norte."
+            ],
+            correct: 1,
+            justification: "Alternativa B. O documento explica que, na Nova Ordem Mundial, a divisão passa a ser Norte e Sul, e o critério central é a economia, com os países do Norte sendo notoriamente mais desenvolvidos do que os países do Sul. A exceção citada é a Austrália, que é incluída dentro deste critério como sendo um país do Norte — por isso tem essa 'curvinha' na linha, como mostra o mapa. Não se trata, portanto, de localização geográfica pura, mas de critério econômico."
+        }
+    ];
+
+    // ============================================================
+    // LÓGICA DO QUIZ (adaptada do modelo)
+    // ============================================================
+    const total = questions.length;
+    let currentIndex = 0;
+    let userAnswers = new Array(total).fill(null);
+    let userJustification = new Array(total).fill(null);
+
+    const mainWrapper = document.getElementById('mainWrapper');
+    const capaScreen = document.getElementById('capaScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const blankScreen = document.getElementById('blankScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsArea = document.getElementById('optionsArea');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressText = document.getElementById('progressText');
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const restartQuizBtn = document.getElementById('restartQuizBtn');
+    const returnPresentationBtn = document.getElementById('returnPresentationBtn');
+    const resultContent = document.getElementById('resultContent');
+    const fontMinus = document.getElementById('fontMinus');
+    const fontPlus = document.getElementById('fontPlus');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    let currentFontSize = 16;
+
+    function setFontSize(size) {
+        mainWrapper.style.fontSize = size + 'px';
+        const els = document.querySelectorAll('.question-text, .feedback, .opt-btn, .tool-btn, .action-btn, .start-btn');
+        els.forEach(el => el.style.fontSize = size + 'px');
+        currentFontSize = size;
+    }
+
+    fontMinus.addEventListener('click', () => setFontSize(Math.max(12, currentFontSize - 2)));
+    fontPlus.addEventListener('click', () => setFontSize(Math.min(36, currentFontSize + 2)));
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+
+    // Renderiza as opções de acordo com o tipo de questão
+    function renderOptions(q) {
+        optionsArea.innerHTML = '';
+        if (q.type === 'truefalse') {
+            const btnTrue = document.createElement('button');
+            btnTrue.className = 'opt-btn';
+            btnTrue.setAttribute('data-value', 'true');
+            btnTrue.textContent = '✅ Verdadeiro';
+            const btnFalse = document.createElement('button');
+            btnFalse.className = 'opt-btn';
+            btnFalse.setAttribute('data-value', 'false');
+            btnFalse.textContent = '❌ Falso';
+            optionsArea.appendChild(btnTrue);
+            optionsArea.appendChild(btnFalse);
+        } else if (q.type === 'multiple') {
+            const letters = ['A', 'B', 'C'];
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.setAttribute('data-value', idx);
+                btn.textContent = `${letters[idx]}) ${opt}`;
+                btn.style.flex = '1 1 100%';
+                btn.style.textAlign = 'left';
+                btn.style.padding = '12px 18px';
+                optionsArea.appendChild(btn);
+            });
+        }
+    }
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        questionText.innerHTML = `<strong>Questão ${currentIndex + 1}:</strong> ${q.text}`;
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = 'feedback';
+        renderOptions(q);
+
+        // Restaura seleção anterior, se houver
+        const selected = userAnswers[currentIndex];
+        if (selected !== null) {
+            const btns = document.querySelectorAll('.opt-btn');
+            btns.forEach(btn => {
+                const val = btn.getAttribute('data-value');
+                if (q.type === 'truefalse') {
+                    if ((val === 'true' && selected === true) || (val === 'false' && selected === false)) {
+                        btn.classList.add('selected');
+                    }
+                } else if (q.type === 'multiple') {
+                    if (parseInt(val) === selected) btn.classList.add('selected');
+                }
+            });
+            if (userJustification[currentIndex]) {
+                const isCorrect = (selected === q.correct);
+                feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+                feedbackArea.style.display = 'block';
+                feedbackArea.innerHTML = userJustification[currentIndex];
+            }
+        }
+        progressText.innerText = `Questão ${currentIndex + 1} de ${total}`;
+        prevBtn.disabled = (currentIndex === 0);
+        nextBtn.disabled = false;
+    }
+
+    function selectAnswer(value, q) {
+        let answer;
+        if (q.type === 'truefalse') {
+            answer = (value === 'true');
+        } else {
+            answer = parseInt(value);
+        }
+        userAnswers[currentIndex] = answer;
+        const isCorrect = (answer === q.correct);
+
+        let correctText;
+        if (q.type === 'truefalse') {
+            correctText = q.correct ? 'Verdadeiro' : 'Falso';
+        } else {
+            const letters = ['A', 'B', 'C'];
+            correctText = `${letters[q.correct]}) ${q.options[q.correct]}`;
+        }
+
+        const explanation =
+            `<strong>${isCorrect ? '✓ Correto!' : '✗ Incorreto'}</strong><br><strong>Gabarito:</strong> ${correctText}<br><strong>Justificativa:</strong> ${q.justification}`;
+
+        userJustification[currentIndex] = explanation;
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.classList.add(isCorrect ? 'correct' : 'wrong');
+        feedbackArea.style.display = 'block';
+        feedbackArea.innerHTML = explanation;
+
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(btn => btn.classList.remove('selected'));
+        if (q.type === 'truefalse') {
+            const selectedBtn = Array.from(btns).find(btn => btn.getAttribute('data-value') === value);
+            if (selectedBtn) selectedBtn.classList.add('selected');
+        } else {
+            const selectedBtn = Array.from(btns).find(btn => parseInt(btn.getAttribute('data-value')) === answer);
+            if (selectedBtn) selectedBtn.classList.add('selected');
+        }
+    }
+
+    optionsArea.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt-btn');
+        if (!btn) return;
+        const q = questions[currentIndex];
+        selectAnswer(btn.getAttribute('data-value'), q);
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (userAnswers[currentIndex] === null) {
+            alert('Por favor, responda a questão antes de avançar.');
+            return;
+        }
+        if (currentIndex < total - 1) {
+            currentIndex++;
+            renderQuestion();
+        } else {
+            mostrarResultado();
+        }
+    });
+
+    function mostrarResultado() {
+        let acertos = 0;
+        let erros = 0;
+        for (let i = 0; i < total; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === questions[i].correct) acertos++;
+            else if (userAnswers[i] !== null) erros++;
+        }
+        const percentual = (acertos / total) * 100;
+        const nota = (acertos / total) * 10;
+
+        let mensagem = "";
+        if (percentual >= 85) mensagem = "⭐ Excelente! Você domina os conceitos de Velha e Nova Ordem Mundial, Guerra Fria, globalização, blocos econômicos e regionalizações. Parabéns!";
+        else if (percentual >= 70) mensagem = "👍 Muito bom! Revise os pontos que errou e tente novamente.";
+        else if (percentual >= 50) mensagem = "📘 Bom, mas dá para melhorar. Releia o material sobre Velha Ordem, Guerra Fria, Nova Ordem Mundial, unimultipolaridade, globalização, blocos econômicos, BRICS e regionalizações Norte/Sul.";
+        else mensagem = "📚 Que tal revisar o conteúdo? Leia com calma o documento e depois refaça o quiz.";
+
+        const resultadoHTML = `
+            <div class="stats">
+                <p><strong>✅ Acertos:</strong> ${acertos} (${percentual.toFixed(1)}%)</p>
+                <p><strong>❌ Erros:</strong> ${erros}</p>
+                <p><strong>🎓 Nota (0 a 10):</strong> ${nota.toFixed(1)}</p>
+                <p><strong>📊 Percentual de acerto:</strong> ${percentual.toFixed(1)}%</p>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <p>${mensagem}</p>
+            </div>
+        `;
+        resultContent.innerHTML = resultadoHTML;
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    function mostrarBlank() {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        blankScreen.classList.remove('active');
+        blankScreen.classList.add('active');
+        mainWrapper.classList.add('wrapper-blank');
+        blankScreen.innerHTML = '';
+    }
+
+    function refazerQuiz() {
+        userAnswers = new Array(total).fill(null);
+        userJustification = new Array(total).fill(null);
+        currentIndex = 0;
+        mainWrapper.classList.remove('wrapper-blank');
+        blankScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    }
+
+    startQuizBtn.addEventListener('click', () => {
+        capaScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+    });
+
+    restartQuizBtn.addEventListener('click', refazerQuiz);
+    // Botão "Retornar para a Apresentação" — direciona para o Google Slides
+    returnPresentationBtn.addEventListener('click', () => {
+        window.location.href = 'https://docs.google.com/presentation/d/1dBvhOn8Ua9HvljSyKug_-msWA10YMV0ODS0qU4lJtPI/edit?slide=id.h2613700f4cea9d9f_0_7#slide=id.h2613700f4cea9d9f_0_7';
+    });
+
+    setFontSize(16);
+</script>
+</body>
+</html>
