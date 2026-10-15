@@ -358,9 +358,9 @@
             text: "Na Velha Ordem Mundial, a regionalização delimitava claramente Leste e Oeste, enquanto na Nova Ordem Mundial a divisão passa a ser Norte e Sul, tendo como critério central a economia, com os países do Norte notoriamente mais desenvolvidos que os do Sul.",
             correct: true,
             justification: "Correto. O documento afirma que, na Velha Ordem, existia clara delimitação entre Leste (liderado pela URSS) e Oeste (liderado pelos EUA), com exceções como Cuba (no Oeste, mas aliada da URSS). Na Nova Ordem, a divisão passa a ser Norte e Sul, tendo como critério central a economia, com os países do Norte notoriamente mais desenvolvidos que os do Sul. A Austrália é exceção incluída no critério como país do Norte, o que explica a 'curvinha' na linha no mapa."
+        },
 
         // ===================== OBJETIVAS (A/B/C) — 11 a 20 =====================
-        ,
         {
             type: "multiple",
             text: "O que caracteriza uma ordem mundial e por que ela não é imutável?",
@@ -474,7 +474,7 @@
     ];
 
     // ============================================================
-    // LÓGICA DO QUIZ (adaptada do modelo)
+    // LÓGICA DO QUIZ
     // ============================================================
     const total = questions.length;
     let currentIndex = 0;
@@ -516,7 +516,6 @@
         else document.exitFullscreen();
     });
 
-    // Renderiza as opções de acordo com o tipo de questão
     function renderOptions(q) {
         optionsArea.innerHTML = '';
         if (q.type === 'truefalse') {
@@ -552,7 +551,6 @@
         feedbackArea.className = 'feedback';
         renderOptions(q);
 
-        // Restaura seleção anterior, se houver
         const selected = userAnswers[currentIndex];
         if (selected !== null) {
             const btns = document.querySelectorAll('.opt-btn');
@@ -674,16 +672,6 @@
         resultScreen.classList.add('active');
     }
 
-    function mostrarBlank() {
-        capaScreen.classList.remove('active');
-        quizScreen.classList.remove('active');
-        resultScreen.classList.remove('active');
-        blankScreen.classList.remove('active');
-        blankScreen.classList.add('active');
-        mainWrapper.classList.add('wrapper-blank');
-        blankScreen.innerHTML = '';
-    }
-
     function refazerQuiz() {
         userAnswers = new Array(total).fill(null);
         userJustification = new Array(total).fill(null);
@@ -702,7 +690,6 @@
     });
 
     restartQuizBtn.addEventListener('click', refazerQuiz);
-    // Botão "Retornar para a Apresentação" — direciona para o Google Slides
     returnPresentationBtn.addEventListener('click', () => {
         window.location.href = 'https://docs.google.com/presentation/d/1dBvhOn8Ua9HvljSyKug_-msWA10YMV0ODS0qU4lJtPI/edit?slide=id.h2613700f4cea9d9f_0_7#slide=id.h2613700f4cea9d9f_0_7';
     });
